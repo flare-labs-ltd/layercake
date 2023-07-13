@@ -1,0 +1,17 @@
+node_modules
+build
+*.solved.js
+cache
+.openzeppelin
+.vscode
+artifacts
+cache
+out
+.DS_Store
+.env
+.env.secret
+broadcast
+target/
+/Cargo.lock
+migrations/00000000000000_diesel_initial_setup
+*.log

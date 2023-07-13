@@ -1,0 +1,25 @@
+[package]
+name = "layercake_rs"
+version = "0.1.0"
+edition = "2021"
+build = "./src/build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+ethers = { version = "2.0", features = ["rustls"] }
+tokio = { version = "1.28.2", features = ["macros", "rt-multi-thread"] }
+
+[dependencies]
+diesel = { version = "2.1.0", features = ["postgres"] }
+dotenvy = "0.15"
+ethers = { version = "2.0", features = ["rustls"] }
+# Ethers' async features rely upon the Tokio async runtime.
+tokio = { version = "1.28.2", features = ["macros", "rt-multi-thread"] }
+# Flexible concrete Error Reporting type built on std::error::Error with customizable Reports
+eyre = "0.6"
+chrono = "0.4.26"
+rand = "0.8.5"
+layer_cake = { path = "./src/abigen-builder/layer_cake"}
+layer_cake_bandwidth_manager = { path = "./src/abigen-builder/layer_cake_bandwidth_manager"}
+ierc20 = { path = "./src/abigen-builder/ierc20" }
