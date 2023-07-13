@@ -1,4 +1,4 @@
-![CI](https://github.com/sprwn/layercake/actions/workflows/layercake-unit-tests.yml/badge.svg)
+![CI](https://github.com/flare-labs-ltd/layercake/actions/workflows/layercake-unit-tests.yml/badge.svg)
 
 # LayerCake: An insured-in-transit cross-network composability protocol
 
