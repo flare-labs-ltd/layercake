@@ -153,7 +153,7 @@ contract NegationOperationsController is Test, LayerCakeTools {
         Vm.Log[] memory entries = vm.getRecordedLogs();
         assertGt(entries.length, 0);
 
-        (, Operations memory operations) = abi.decode(entries[3].data, (bytes32, Operations));
+        (, Operations memory operations) = abi.decode(entries[2].data, (bytes32, Operations));
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as negated
@@ -192,7 +192,7 @@ contract NegationOperationsController is Test, LayerCakeTools {
         Vm.Log[] memory entries = vm.getRecordedLogs();
         assertGt(entries.length, 0);
 
-        (, Operations memory operations) = abi.decode(entries[3].data, (bytes32, Operations));
+        (, Operations memory operations) = abi.decode(entries[2].data, (bytes32, Operations));
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as not negated
@@ -234,7 +234,7 @@ contract NegationOperationsController is Test, LayerCakeTools {
         Vm.Log[] memory entries = vm.getRecordedLogs();
         assertGt(entries.length, 0);
 
-        (, Operations memory operations) = abi.decode(entries[3].data, (bytes32, Operations));
+        (, Operations memory operations) = abi.decode(entries[2].data, (bytes32, Operations));
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as negated
