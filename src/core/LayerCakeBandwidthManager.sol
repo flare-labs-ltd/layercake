@@ -23,8 +23,6 @@ contract LayerCakeBandwidthManager {
     uint256 public immutable bandwidthPeriod;
     uint256 public immutable bandwidthDepositDenominator;
     uint256 public immutable defaultNegationCost;
-    uint256 public immutable negationCounterReset;
-    uint256 public immutable negationCostResetPeriod;
     uint256 public immutable negationRewardDenominator;
 
     constructor(
@@ -38,9 +36,7 @@ contract LayerCakeBandwidthManager {
         bandwidthPeriod = 2 * reorgAssumption;
         bandwidthDepositDenominator = _bandwidthDepositDenominator;
         defaultNegationCost = _defaultNegationCost;
-        negationCounterReset = bandwidthDepositDenominator;
-        negationCostResetPeriod = negationCounterReset * bandwidthPeriod;
-        negationRewardDenominator = 2 * bandwidthDepositDenominator;
+        negationRewardDenominator = 10 * bandwidthDepositDenominator;
     }
 
     mapping(address => BandwidthProvider) public bpInfo;
@@ -126,11 +122,7 @@ contract LayerCakeBandwidthManager {
             require(bp.prevInvalidExecutionProofId == _invalidExecutionProofId, "NB1");
         }
         if (!bp.negated) {
-            if (
-                bp.timeLastNegated > bp.timeLastActive && block.timestamp - bp.timeLastActive >= negationCostResetPeriod
-                    && bp.negationCounter > negationCounterReset
-                    && block.timestamp - bp.timeLastNegated < 2 * bandwidthPeriod
-            ) {
+            if (bp.negationCounter > 1) {
                 require(_depositedAmount - _fee == bp.currentTotalBandwidth, "NB2");
                 bp.negationCounter = 0;
             } else {

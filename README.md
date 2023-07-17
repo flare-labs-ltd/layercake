@@ -151,6 +151,20 @@ This creates a valid execution on the chain where the user stored the operations
 function executeCancelStandardOperations(ExecutionProof memory _executionProof) external nonReentrant
 ```
 
+#### Increasing Fees
+
+Users may increase their fee on the chain they are expecting to have their operations executed on by calling `increaseFee()`.
+
+```solidity
+function increaseFee(
+    bytes32 _executionId,
+    uint256 _executionTime,
+    uint256 _addedFee
+) 
+    external 
+    nonReentrant 
+```
+
 #### Adding and Subtracting Bandwidth
 
 Anyone may at any time add new bandwidth to the system by calling `addBandwidth()`:
@@ -291,38 +305,38 @@ If the bandwidth provider reversed a negation as described above, but they refer
 
 The successive calls to `storeNegationOperations()` are always earning money for the sender that is actually correct with a claim about an `invalidExecutionProof` being valid or invalid. Thus, if a bandwidth provider is continually negated when they have not performed any invalid actions, they are repeatedly going to earn `defaultNegationCost`. 
 
-In general, the cost to perform an initial negation is low, such that the barrier to entry for creating negations is low. However, if a bandwidth provider has been made negative `negationCounterReset` many times, and has not used any bandwidth for `negationCostResetPeriod` length of time, then the cost to perform an initial negation becomes the total bandwidth for a period of `2*bandwidthPeriod` time since the last negation reversal occurred. The value of `bp.negationCounter` then resets to zero and subsequent negations cost `defaultNegationCost` again. The purpose of this setup is to keep the costs low for creating negations in general, but to surge to a higher negation cost to disincentivise endless calls to negations to stall the system.
+In general, the cost to perform an initial negation is low, such that the barrier to entry for creating negations is low. However, if a bandwidth provider has had their bandwidth made negative twice, then the cost to perform an initial negation becomes the total bandwidth until the moment that the bandwidth provider next makes an execution. The value of `bp.negationCounter` then resets to zero and subsequent negations cost `defaultNegationCost` again. The purpose of this setup is to keep the costs low for creating negations in general, but to surge to a higher negation cost to disincentivise endless calls to negations against non-faulty bandwidth providers to stall the system.
 
-The value of `negationCounterReset` is set automatically to be equal to `bandwidthDepositDenominator`. This means that for a higher `bandwidthDepositDenominator`, there are lower negation rewards and therefore subsequent negations cost a low amount of value for a longer period of time, with `negationCostResetPeriod = negationCounterReset * bandwidthPeriod`.  
+The following table shows the economic results of an attack by a bandwidth provider being mitigated, even after they attempt to continue the attack through reversing negations. The results show that successive attempts to reverse negations by the bandwidth provider worsen the economic outcome for the bandwidth provider, including in the worst case scenario where the bandwidth provider is on both sides of all negations.
 
-#### Additional functions
+| Operation                     | Economic result                           | Comment                                   |
+|-------------------------------|-------------------------------------------|-------------------------------------------|
+| addBandwidth $(B)_x^*$        | $x \rightarrow -1.1B$                     | The additional $0.1B$ deposit is required for all added bandwidth to the system. |  
+| executeOperations $(B)_x^!$   | $x \rightarrow +B$                        | Invalid execution, $x$ pays itself $B$ tokens without a valid corresponding storage of operations to the system. |
+| negateBp $(x, \mu)_y^*$       | $y \rightarrow +0.01B$                    | Valid negation costing the small constant $\mu$ many tokens which are returned to $y$ along with a reward of $0.01B$. The security assumption is that some $y$ can negate $x$ within one `reorgAssumption` amount of time after an invalid execution by $x$. |
+| negateBp $(x, B)_x^!$         | $x \rightarrow -B$                        | Invalid negation, $x$ may operate again after 1 bandwidth period, but they have lost $B$ tokens. |
+| negateBp $(x, \mu)_y^*$       | $y \rightarrow +0.01B$                    | Valid negation again. From this point onwards until $x$ makes another execution, negations that set $x$ to have negative bandwidth now cost $B$ tokens instead of $\mu$ tokens. |
+| negateBp $(x, B)_x^!$         | $x \rightarrow -B$                        | Invalid negation again. $x$ does not have to be negated again at this point because they haven't made an invalid execution that isn't currently paid for. However, they could be validly negated here for a cost of $B$ tokens. |
+| executeOperations $(B)_x^!$   | $x \rightarrow +B$                        | Invalid execution again. The negation counter is reset to zero, and negations cost $\mu$ tokens again. |
+| negateBp $(x, \mu)_y^*$       | $y \rightarrow +0.01B$                    | Since the negation counter was reset to zero, $x$ is validly negated again for a cost of $\mu$ tokens which are returned to $y$ along with the reward of $0.01B$ tokens. The security assumption remains that some $y$ can negate $x$ within one `reorgAssumption` amount of time after an invalid execution by $x$.
+|                               | **Totals**                                |
+|                               | $x \rightarrow -1.1B$                     | The scheme by $x$ was unprofitable and lost $1.1B$ tokens
+|                               | $y \rightarrow +0.03B$                    | $y$ earned a reward of $0.03B$ for negating $x$, and in the worst case where $x==y$, the scheme by $x$ remains unprofitable by losing $1.07B$.
+|                               | $c \rightarrow +1.07B$ (overcollaterised) | The LayerCake contract, $c$, retains the balance of tokens, and is in effect overcollateralised with an additional $1.07B$ tokens that can no longer be removed from the system through any executions by $x$ since it is negated. 
 
-Users may increase their fee on the chain they are expecting to have their operations executed on by calling `increaseFee()`.
+If $x$ continues the attack from here, the economic outcome becomes even worse for them:
 
-```solidity
-function increaseFee(
-    bytes32 _executionId,
-    uint256 _executionTime,
-    uint256 _addedFee
-) 
-    external 
-    nonReentrant 
-```
-
-Users may also update the `sender`, `recipient` and `callData` for a stored set of operations that have not yet been executed by calling `updateStandardOperations()`.
-
-```solidity 
-function updateStandardOperations(
-    Operations memory _operations,
-    address _updatedSender,
-    address _updatedRecipient,
-    bytes memory _updatedCallData
-)
-    external
-    nonReentrant
-```
-
-This function is also called on the chain where the user is expecting to have their operations executed, and it provides an ability for users to trade their stored operations to a third party or to update their operations in order to have a more favourable execution if it is taking some time for their operations to be fully prepared on the destination chain.
+| Operation                     | Economic result                           | Comment                                   |
+|-------------------------------|-------------------------------------------|-------------------------------------------|
+| negateBp $(x, B)_x^!$         | $x \rightarrow -B$                        | |
+| negateBp $(x, \mu)_y^*$       | $y \rightarrow +0.01B$                    | |
+| negateBp $(x, B)_x^!$         | $x \rightarrow -B$                        | |
+| executeOperations $(B)_x^!$   | $x \rightarrow +B$                        | |
+| negateBp $(x, \mu)_y^*$       | $y \rightarrow +0.01B$                    | |
+|                               | **Totals**                                | |
+|                               | $x \rightarrow -2.1B$                     | |
+|                               | $y \rightarrow +0.05B$                    | It can be seen that the rate of increase of loss by $x$ is outpacing the rate of increase of return by $y$, which is an important property assuming the worst case where $x==y$.|
+|                               | $c \rightarrow +2.05B$ (overcollaterised) | |
 
 ### LayerCakeBandwidthManager.sol
 

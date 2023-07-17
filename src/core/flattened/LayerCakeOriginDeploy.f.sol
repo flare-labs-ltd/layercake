@@ -674,11 +674,11 @@ library EnumerableMap {
      * CAUTION: This function is deprecated because it requires allocating memory for the error
      * message unnecessarily. For custom revert reasons use {tryGet}.
      */
-    function get(
-        Bytes32ToBytes32Map storage map,
-        bytes32 key,
-        string memory errorMessage
-    ) internal view returns (bytes32) {
+    function get(Bytes32ToBytes32Map storage map, bytes32 key, string memory errorMessage)
+        internal
+        view
+        returns (bytes32)
+    {
         bytes32 value = map._values[key];
         require(value != 0 || contains(map, key), errorMessage);
         return value;
@@ -880,11 +880,11 @@ library EnumerableMap {
      * CAUTION: This function is deprecated because it requires allocating memory for the error
      * message unnecessarily. For custom revert reasons use {tryGet}.
      */
-    function get(
-        UintToAddressMap storage map,
-        uint256 key,
-        string memory errorMessage
-    ) internal view returns (address) {
+    function get(UintToAddressMap storage map, uint256 key, string memory errorMessage)
+        internal
+        view
+        returns (address)
+    {
         return address(uint160(uint256(get(map._inner, bytes32(key), errorMessage))));
     }
 
@@ -988,11 +988,11 @@ library EnumerableMap {
      * CAUTION: This function is deprecated because it requires allocating memory for the error
      * message unnecessarily. For custom revert reasons use {tryGet}.
      */
-    function get(
-        AddressToUintMap storage map,
-        address key,
-        string memory errorMessage
-    ) internal view returns (uint256) {
+    function get(AddressToUintMap storage map, address key, string memory errorMessage)
+        internal
+        view
+        returns (uint256)
+    {
         return uint256(get(map._inner, bytes32(uint256(uint160(key))), errorMessage));
     }
 
@@ -1096,11 +1096,11 @@ library EnumerableMap {
      * CAUTION: This function is deprecated because it requires allocating memory for the error
      * message unnecessarily. For custom revert reasons use {tryGet}.
      */
-    function get(
-        Bytes32ToUintMap storage map,
-        bytes32 key,
-        string memory errorMessage
-    ) internal view returns (uint256) {
+    function get(Bytes32ToUintMap storage map, bytes32 key, string memory errorMessage)
+        internal
+        view
+        returns (uint256)
+    {
         return uint256(get(map._inner, key, errorMessage));
     }
 

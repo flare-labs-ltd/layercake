@@ -67,24 +67,14 @@ contract LayerCakeVerifiedSetupTest is Test, LayerCakeTools {
         assertEq(originBandwidthManager.bandwidthPeriod(), 2 * c.reorgAssumption());
         assertEq(originBandwidthManager.bandwidthDepositDenominator(), c.bandwidthDepositDenominator());
         assertEq(originBandwidthManager.defaultNegationCost(), c.defaultNegationCost());
-        assertEq(originBandwidthManager.negationCounterReset(), c.bandwidthDepositDenominator());
-        assertEq(
-            originBandwidthManager.negationCostResetPeriod(),
-            originBandwidthManager.bandwidthPeriod() * originBandwidthManager.negationCounterReset()
-        );
-        assertEq(originBandwidthManager.negationRewardDenominator(), 2 * c.bandwidthDepositDenominator());
+        assertEq(originBandwidthManager.negationRewardDenominator(), 10 * c.bandwidthDepositDenominator());
 
         assertEq(destinationBandwidthManager.layerCakeContract(), address(c.destinationLayercake()));
         assertEq(destinationBandwidthManager.reorgAssumption(), c.reorgAssumption());
         assertEq(destinationBandwidthManager.bandwidthPeriod(), 2 * c.reorgAssumption());
         assertEq(destinationBandwidthManager.bandwidthDepositDenominator(), c.bandwidthDepositDenominator());
         assertEq(destinationBandwidthManager.defaultNegationCost(), c.defaultNegationCost());
-        assertEq(destinationBandwidthManager.negationCounterReset(), c.bandwidthDepositDenominator());
-        assertEq(
-            destinationBandwidthManager.negationCostResetPeriod(),
-            destinationBandwidthManager.bandwidthPeriod() * destinationBandwidthManager.negationCounterReset()
-        );
-        assertEq(destinationBandwidthManager.negationRewardDenominator(), 2 * c.bandwidthDepositDenominator());
+        assertEq(destinationBandwidthManager.negationRewardDenominator(), 10 * c.bandwidthDepositDenominator());
 
         // Deposits
         uint256 originDepositedAmount = 86000000;
