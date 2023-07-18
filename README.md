@@ -522,7 +522,7 @@ bash -i script/deps/linux/grafana.sh
 source $HOME/.bashrc
 ```
 
-![LayerCake grafana dashboard](/img/indexer.png)
+![LayerCake grafana dashboard](/assets/indexer.png)
 
 Then, navigate in your web browser to `localhost:3000`, and use the first-time login {username: `admin`, password: `admin`}, which will then prompt you to set a new password. Next, import the LayerCake grafana dashboard:
 
