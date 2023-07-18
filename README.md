@@ -60,7 +60,7 @@ sequenceDiagram
 
 For complete protocol design information, see the yellow paper linked in the following section.
 
-## Docs
+## Documentation
 
 - [Yellow paper](docs/yellow-paper.md)
 - [Foundry unit tests](docs/tests.md)
