@@ -10,8 +10,8 @@ contract LayerCakeTransportedToken is ERC20 {
     string public tokenPrefix = "LC";
 
     // Decimals are set to 18 by default in `ERC20`
-    constructor(uint256 _mintingCap, string memory _name, string memory _symbol)
-        ERC20(string.concat(tokenPrefix, _name), string.concat(tokenPrefix, _symbol))
+    constructor(uint256 _mintingCap, string memory _originName, string memory _originSymbol)
+        ERC20(string.concat(tokenPrefix, _originName), string.concat(tokenPrefix, _originSymbol))
     {
         require(_mintingCap > 0, "C1");
         _mint(msg.sender, _mintingCap);
