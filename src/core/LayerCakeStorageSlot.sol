@@ -2,7 +2,7 @@
 // Copyright (c) 2023, Flare Mainnet Holdings Ltd.
 // All rights reserved.
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 import "./LayerCakeExecutionProof.sol";
 
@@ -26,10 +26,13 @@ contract LayerCakeStorageSlot is LayerCakeExecutionProof {
     mapping(address => uint256) public totalStoredPerAddress;
     mapping(address => uint256) public totalPreparedPerAddress;
 
-    constructor(address _storageManager, uint256 _startTime, uint256 _storageEndTime) {
-        storageManager = _storageManager;
-        storageStartTime = _startTime;
-        storageEndTime = _storageEndTime;
+    constructor(address cStorageManager, uint256 cStartTime, uint256 cStorageEndTime) {
+        require(cStorageManager != address(0), "LCS1");
+        require(cStartTime > 0, "LCS2");
+        require(cStorageEndTime > cStartTime, "LCS3");
+        storageManager = cStorageManager;
+        storageStartTime = cStartTime;
+        storageEndTime = cStorageEndTime;
     }
 
     modifier storageManagerOnly() {
@@ -45,54 +48,54 @@ contract LayerCakeStorageSlot is LayerCakeExecutionProof {
     // View Storage functions
     // ==================
 
-    function getExecutionIdStored(bytes32 _executionId) external view returns (bool) {
-        return openedExecutionIds[_executionId];
+    function getExecutionIdStored(bytes32 executionId) external view returns (bool) {
+        return openedExecutionIds[executionId];
     }
 
-    function getExecutionIdPrepared(bytes32 _executionId) public view returns (bool, uint256) {
-        return (preparedExecutionIds[_executionId].executionPrepared, preparedExecutionIds[_executionId].totalPrepared);
+    function getExecutionIdPrepared(bytes32 executionId) public view returns (bool, uint256) {
+        return (preparedExecutionIds[executionId].executionPrepared, preparedExecutionIds[executionId].totalPrepared);
     }
 
     // ==================
     // Set Storage functions
     // ==================
 
-    function storeExecutionId(bytes32 _executionId, address _sender, uint256 _amount) external storageManagerOnly {
-        openedExecutionIds[_executionId] = true;
-        totalStored = totalStored + _amount;
-        totalStoredPerAddress[_sender] = totalStoredPerAddress[_sender] + _amount;
+    function storeExecutionId(bytes32 executionId, address sender, uint256 amount) external storageManagerOnly {
+        openedExecutionIds[executionId] = true;
+        totalStored = totalStored + amount;
+        totalStoredPerAddress[sender] = totalStoredPerAddress[sender] + amount;
     }
 
-    function prepareExecutionId(bytes32 _executionId, address _preparer, ExecutionProof memory _executionProof)
+    function prepareExecutionId(bytes32 executionId, address preparer, ExecutionProof memory executionProof)
         external
         storageManagerOnly
         returns (uint256, uint256, bool)
     {
-        ExecutionPreparation memory executionIdInfo = preparedExecutionIds[_executionId];
-        uint256 remainingAmount = _executionProof.operations.amount - executionIdInfo.totalPrepared;
+        ExecutionPreparation memory executionIdInfo = preparedExecutionIds[executionId];
+        uint256 remainingAmount = executionProof.operations.amount - executionIdInfo.totalPrepared;
         require(remainingAmount > 0, "PEIP1");
-        if (_executionProof.partialAmount >= remainingAmount) {
+        if (executionProof.partialAmount >= remainingAmount) {
             executionIdInfo.executionPrepared = true;
-            _executionProof.partialAmount = remainingAmount;
+            executionProof.partialAmount = remainingAmount;
         }
-        uint256 remainingFees = _executionProof.operations.fee + executionIdInfo.feeIncrease - executionIdInfo.feesPaid;
-        uint256 partialFee = (_executionProof.partialAmount * remainingFees) / remainingAmount;
-        uint256 newRemainingAmount = remainingAmount - _executionProof.partialAmount;
+        uint256 remainingFees = executionProof.operations.fee + executionIdInfo.feeIncrease - executionIdInfo.feesPaid;
+        uint256 partialFee = (executionProof.partialAmount * remainingFees) / remainingAmount;
+        uint256 newRemainingAmount = remainingAmount - executionProof.partialAmount;
         uint256 newRemainingFees = remainingFees - partialFee;
         if (newRemainingAmount > 0 && remainingFees > 0) {
             require(newRemainingFees > 0, "PEIP2");
         }
-        executionIdInfo.totalPrepared = executionIdInfo.totalPrepared + _executionProof.partialAmount;
+        executionIdInfo.totalPrepared = executionIdInfo.totalPrepared + executionProof.partialAmount;
         executionIdInfo.feesPaid = executionIdInfo.feesPaid + partialFee;
-        preparedExecutionIds[_executionId] = executionIdInfo;
-        if (_preparer != _executionProof.operations.sender) {
-            totalPreparedPerAddress[_preparer] = totalPreparedPerAddress[_preparer] + _executionProof.partialAmount;
-            totalPrepared = totalPrepared + _executionProof.partialAmount;
+        preparedExecutionIds[executionId] = executionIdInfo;
+        if (preparer != executionProof.operations.sender) {
+            totalPreparedPerAddress[preparer] = totalPreparedPerAddress[preparer] + executionProof.partialAmount;
+            totalPrepared = totalPrepared + executionProof.partialAmount;
         }
-        return (partialFee, _executionProof.partialAmount, executionIdInfo.executionPrepared);
+        return (partialFee, executionProof.partialAmount, executionIdInfo.executionPrepared);
     }
 
-    function increaseFee(bytes32 _executionId, uint256 _amount) external storageManagerOnly {
-        preparedExecutionIds[_executionId].feeIncrease = preparedExecutionIds[_executionId].feeIncrease + _amount;
+    function increaseFee(bytes32 executionId, uint256 amount) external storageManagerOnly {
+        preparedExecutionIds[executionId].feeIncrease = preparedExecutionIds[executionId].feeIncrease + amount;
     }
 }

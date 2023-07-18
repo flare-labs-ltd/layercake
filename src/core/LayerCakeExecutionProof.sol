@@ -2,7 +2,7 @@
 // Copyright (c) 2023, Flare Mainnet Holdings Ltd.
 // All rights reserved.
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 contract LayerCakeExecutionProof {
     struct Operations {

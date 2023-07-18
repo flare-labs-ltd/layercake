@@ -2,7 +2,7 @@
 // Copyright (c) 2023, Flare Mainnet Holdings Ltd.
 // All rights reserved.
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 contract LayerCakeDeployTools {
     struct BalanceChange {
@@ -13,11 +13,11 @@ contract LayerCakeDeployTools {
 
     event BalanceChangeEvent(BalanceChange balanceChange);
 
-    function getVerificationHashUpdate(bytes32 _verificationHash, BalanceChange memory _balanceChange)
+    function getVerificationHashUpdate(bytes32 verificationHash, BalanceChange memory balanceChange)
         public
         pure
         returns (bytes32 verificationHashUpdate)
     {
-        verificationHashUpdate = keccak256(abi.encode("layercakeBalanceChangeHash", _verificationHash, _balanceChange));
+        verificationHashUpdate = keccak256(abi.encode("layercakeBalanceChangeHash", verificationHash, balanceChange));
     }
 }

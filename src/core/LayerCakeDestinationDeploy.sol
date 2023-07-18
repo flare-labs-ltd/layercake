@@ -2,7 +2,7 @@
 // Copyright (c) 2023, Flare Mainnet Holdings Ltd.
 // All rights reserved.
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 import "../../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "../../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableMap.sol";
@@ -16,22 +16,22 @@ contract LayerCakeDestinationDeploy is LayerCakeDeployTools, ReentrancyGuard {
     uint256 public immutable depositedAmount;
     bytes32 public computedVerificationHash;
 
-    LayerCakeTransportedToken public destinationToken;
+    LayerCakeTransportedToken public immutable destinationToken;
 
-    EnumerableMap.AddressToUintMap internal _deposits;
+    EnumerableMap.AddressToUintMap internal deposits;
 
     constructor(
-        address _layerCakeAddress,
-        address _destinationTokenAddress,
-        bytes32 _verificationHash,
-        uint256 _depositCap,
-        uint256 _depositedAmount
+        address cLayerCakeAddress,
+        address cDestinationTokenAddress,
+        bytes32 cVerificationHash,
+        uint256 cDepositCap,
+        uint256 cDepositedAmount
     ) {
         deployer = msg.sender;
-        verificationHash = _verificationHash;
-        destinationToken = LayerCakeTransportedToken(_destinationTokenAddress);
-        require(destinationToken.balanceOf(_layerCakeAddress) == _depositCap - _depositedAmount);
-        depositedAmount = _depositedAmount;
+        verificationHash = cVerificationHash;
+        destinationToken = LayerCakeTransportedToken(cDestinationTokenAddress);
+        require(destinationToken.balanceOf(cLayerCakeAddress) == cDepositCap - cDepositedAmount);
+        depositedAmount = cDepositedAmount;
     }
 
     modifier preDeployOnly() {
@@ -49,17 +49,17 @@ contract LayerCakeDestinationDeploy is LayerCakeDeployTools, ReentrancyGuard {
         _;
     }
 
-    function setBalanceChange(BalanceChange memory _balanceChange) external preDeployOnly deployerOnly nonReentrant {
+    function setBalanceChange(BalanceChange memory balanceChange) external preDeployOnly deployerOnly nonReentrant {
         require(destinationToken.balanceOf(address(this)) == depositedAmount);
-        if (_balanceChange.deposit) {
-            (, uint256 currentBalance) = EnumerableMap.tryGet(_deposits, _balanceChange.sender);
-            EnumerableMap.set(_deposits, _balanceChange.sender, currentBalance + _balanceChange.amount);
+        if (balanceChange.deposit) {
+            (, uint256 currentBalance) = EnumerableMap.tryGet(deposits, balanceChange.sender);
+            EnumerableMap.set(deposits, balanceChange.sender, currentBalance + balanceChange.amount);
         } else {
-            uint256 currentBalance = EnumerableMap.get(_deposits, _balanceChange.sender);
-            EnumerableMap.set(_deposits, _balanceChange.sender, currentBalance - _balanceChange.amount);
+            uint256 currentBalance = EnumerableMap.get(deposits, balanceChange.sender);
+            EnumerableMap.set(deposits, balanceChange.sender, currentBalance - balanceChange.amount);
         }
-        computedVerificationHash = getVerificationHashUpdate(computedVerificationHash, _balanceChange);
-        emit BalanceChangeEvent(_balanceChange);
+        computedVerificationHash = getVerificationHashUpdate(computedVerificationHash, balanceChange);
+        emit BalanceChangeEvent(balanceChange);
         if (computedVerificationHash == verificationHash) {
             deployed = true;
             return;
@@ -67,9 +67,9 @@ contract LayerCakeDestinationDeploy is LayerCakeDeployTools, ReentrancyGuard {
     }
 
     function withdraw() external postDeployOnly nonReentrant {
-        uint256 currentBalance = EnumerableMap.get(_deposits, msg.sender);
+        uint256 currentBalance = EnumerableMap.get(deposits, msg.sender);
         require(currentBalance > 0, "W1");
-        EnumerableMap.remove(_deposits, msg.sender);
-        destinationToken.transfer(msg.sender, currentBalance);
+        EnumerableMap.remove(deposits, msg.sender);
+        require(destinationToken.transfer(msg.sender, currentBalance), "W2");
     }
 }
