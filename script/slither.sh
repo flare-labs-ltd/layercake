@@ -1,3 +1,3 @@
 #!/bin/bash
-./script/flatten_src.sh
+./script/flatten.sh
 slither src/core/flattened/ --checklist --show-ignored-findings > slither.md
