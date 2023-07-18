@@ -29,7 +29,7 @@ Summary
 ## weak-prng
 Impact: High
 Confidence: Medium
- - [ ] ID-0
+ - [x] ID-0
 [LayerCakeStorageManager._getStorageSlot(uint256)](src/core/LayerCakeStorageManager.sol#L42-L55) uses a weak PRNG: "[thisStorageSlot = thisStorageEpoch % STORAGE_SLOTS](src/core/LayerCakeStorageManager.sol#L51)" 
 
 src/core/LayerCakeStorageManager.sol#L42-L55
