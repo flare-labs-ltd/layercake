@@ -12,51 +12,7 @@ The key features of LayerCake are:
 - The system has a set of verified setup contracts which initializes the LayerCake contracts without any trusted party, and ensures that the system starts with as many available bandwidth providers that are interested to join.
 - The footprint of the system is lightweight and fast, and does not leverage any re-running of computation on a destination blockchain that happened on a source blockchain or vice versa, unlike zero-knowledge and optimistic rollup style approaches.
 
-The standard user interaction with LayerCake is depicted below:
-
-```mermaid
-sequenceDiagram
-    participant Sender
-    participant LayerCakeOrigin
-    participant BandwidthProvider
-    participant LayerCakeDestination
-    participant Recipient
-    Sender->>LayerCakeOrigin: storeStandardOperations(<br />_operations);
-    LayerCakeOrigin-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />uint256 operations);
-    BandwidthProvider->>LayerCakeDestination: executeStandardOperations(<br />_executionProof)
-    activate LayerCakeDestination
-    LayerCakeDestination->>Recipient: transfer(<br />recipient,<br />amount)
-    LayerCakeDestination->>Recipient: calldataInterface.<br />execute(calldata)
-    LayerCakeDestination->>BandwidthProvider: transfer(<br />bandwidthProvider,<br />fee)
-    deactivate LayerCakeDestination
-```
-
-The bandwidth negation mechanism is described in the following diagram: 
-
-```mermaid
-sequenceDiagram
-    participant Recipient
-    participant LayerCakeOrigin
-    participant BandwidthProvider
-    participant FaultyBandwidthProvider
-    participant LayerCakeDestination
-    participant Sender
-    FaultyBandwidthProvider->>LayerCakeDestination: executeStandardOperations(<br />_executionProof)
-    activate LayerCakeDestination
-    LayerCakeDestination->>FaultyBandwidthProvider: transfer(<br />faultyBandwidthProvider,<br />amount)
-    deactivate LayerCakeDestination
-    LayerCakeDestination-->>Sender: event OperationsExecuted(<br />bytes32 executionId,<br />address bandwidthProvider,<br />ExecutionProof executionProof,<br />bool executionPrepared);
-    Sender->>LayerCakeDestination: storeNegationOperations(<br />_operations);
-    activate LayerCakeDestination
-    LayerCakeDestination->>LayerCakeDestination: faultyBandwidthProvider<br />negated
-    deactivate LayerCakeDestination
-    LayerCakeDestination-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />uint256 operations);
-    BandwidthProvider->>LayerCakeOrigin: executeNegationOperations(<br />_executionProof)
-    activate LayerCakeOrigin
-    LayerCakeOrigin->>Recipient: transfer(<br />recipient,<br />defaultNegationCost +<br />faultyBp.currentTotalBandwidth/<br />negationRewardDenominator)
-    LayerCakeOrigin->>BandwidthProvider: transfer(<br />bandwidthProvider,<br />fee)
-    deactivate LayerCakeOrigin
-```
+![LayerCake Overview](/assets/layercake.png)
 
 For complete protocol design information, see the yellow paper linked in the following section.
 

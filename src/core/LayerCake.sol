@@ -4,7 +4,6 @@
 
 pragma solidity 0.8.19;
 
-import "../../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "./LayerCakeTools.sol";
 import "./LayerCakeBandwidthManager.sol";
@@ -15,7 +14,7 @@ import "./LayerCakeCalldataInterface.sol";
  * @title LayerCake
  * @dev An insured-in-transit cross-network composability protocol
  */
-contract LayerCake is ReentrancyGuard, LayerCakeTools {
+contract LayerCake is LayerCakeTools {
     // =================================================================================
     // PUBLIC VARIABLES
     // =================================================================================
@@ -96,7 +95,7 @@ contract LayerCake is ReentrancyGuard, LayerCakeTools {
         _storeOperations(operations);
     }
 
-    function cancelStandardOperations(Operations memory operations) external nonReentrant {
+    function cancelStandardOperations(Operations memory operations) external {
         require(operations.negatedBandwidthProvider == address(0), "CSO1");
         require(!operations.cancel, "CSO2");
         bytes32 executionId = getExecutionId(arrivingPathwayId, operations);
@@ -112,7 +111,7 @@ contract LayerCake is ReentrancyGuard, LayerCakeTools {
         _storeOperations(operations);
     }
 
-    function storeNegationOperations(Operations memory operations) external nonReentrant {
+    function storeNegationOperations(Operations memory operations) external {
         require(operations.negatedBandwidthProvider != address(0), "SNO1");
         require(!operations.cancel, "SNO2");
         uint256 currentBalance = token.balanceOf(address(this));
@@ -135,13 +134,13 @@ contract LayerCake is ReentrancyGuard, LayerCakeTools {
         emit BandwidthChanged(msg.sender, true, bandwidthAmount);
     }
 
-    function subtractBandwidth(uint256 bandwidthAmount) external nonReentrant {
+    function subtractBandwidth(uint256 bandwidthAmount) external {
         uint256 withdrawnAmount = bandwidthManager.subtractBandwidth(msg.sender, bandwidthAmount);
         require(token.transfer(msg.sender, withdrawnAmount), "SB1");
         emit BandwidthChanged(msg.sender, false, bandwidthAmount);
     }
 
-    function increaseFee(bytes32 executionId, uint256 executionTime, uint256 addedFee) external nonReentrant {
+    function increaseFee(bytes32 executionId, uint256 executionTime, uint256 addedFee) external {
         require(block.timestamp >= executionTime, "IF1");
         require(token.transferFrom(msg.sender, address(this), addedFee), "IF2");
         require(token.balanceOf(address(this)) <= depositCap, "IF3");
@@ -175,7 +174,7 @@ contract LayerCake is ReentrancyGuard, LayerCakeTools {
         }
     }
 
-    function executeCancelStandardOperations(ExecutionProof memory executionProof) external nonReentrant {
+    function executeCancelStandardOperations(ExecutionProof memory executionProof) external {
         require(executionProof.operations.negatedBandwidthProvider == address(0), "ECSO1");
         require(executionProof.operations.cancel, "ECSO2");
         require(executionProof.operations.cancellationFeeRefund <= executionProof.operations.fee, "ECSO3");
@@ -205,7 +204,7 @@ contract LayerCake is ReentrancyGuard, LayerCakeTools {
     function executeNegationOperations(
         ExecutionProof memory negationExecutionProof,
         ExecutionProof memory invalidExecutionProof
-    ) external nonReentrant {
+    ) external {
         require(negationExecutionProof.operations.negatedBandwidthProvider != address(0), "ENO1");
         require(!negationExecutionProof.operations.cancel, "ENO2");
         require(negationExecutionProof.operations.cancellationFeeRefund == 0, "ENO3");

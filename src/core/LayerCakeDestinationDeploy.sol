@@ -49,7 +49,7 @@ contract LayerCakeDestinationDeploy is LayerCakeDeployTools, ReentrancyGuard {
         _;
     }
 
-    function setBalanceChange(BalanceChange memory balanceChange) external preDeployOnly deployerOnly nonReentrant {
+    function setBalanceChange(BalanceChange memory balanceChange) external preDeployOnly deployerOnly {
         require(destinationToken.balanceOf(address(this)) == depositedAmount);
         if (balanceChange.deposit) {
             (, uint256 currentBalance) = EnumerableMap.tryGet(deposits, balanceChange.sender);
