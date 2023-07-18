@@ -12,8 +12,6 @@ The key features of LayerCake are:
 - The system has a set of verified setup contracts which initializes the LayerCake contracts without any trusted party, and ensures that the system starts with as many available bandwidth providers that are interested to join.
 - The footprint of the system is lightweight and fast, and does not leverage any re-running of computation on a destination blockchain that happened on a source blockchain or vice versa, unlike zero-knowledge and optimistic rollup style approaches.
 
-![LayerCake Overview](/assets/layercake.png)
-
 For complete protocol design information, see the yellow paper linked in the following section.
 
 ## Documentation
