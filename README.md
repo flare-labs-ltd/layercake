@@ -12,6 +12,23 @@ The key features of LayerCake are:
 - The system has a set of verified setup contracts which initializes the LayerCake contracts without any trusted party, and ensures that the system starts with as many available bandwidth providers that are interested to join.
 - The footprint of the system is lightweight and fast, and does not leverage any re-running of computation on a destination blockchain that happened on a source blockchain or vice versa, unlike zero-knowledge and optimistic rollup style approaches.
 
+```mermaid
+sequenceDiagram
+    participant Sender
+    participant LayerCakeOrigin
+    participant BandwidthProvider
+    participant LayerCakeDestination
+    participant Recipient
+    Sender->>LayerCakeOrigin: storeStandardOperations(<br />_operations);
+    LayerCakeOrigin-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />uint256 operations);
+    BandwidthProvider->>LayerCakeDestination: executeStandardOperations(<br />_executionProof)
+    activate LayerCakeDestination
+    LayerCakeDestination->>Recipient: transfer(<br />recipient,<br />amount)
+    LayerCakeDestination->>Recipient: calldataInterface.<br />execute(calldata)
+    LayerCakeDestination->>BandwidthProvider: transfer(<br />bandwidthProvider,<br />fee)
+    deactivate LayerCakeDestination
+```
+
 ## Docs
 
 - [Yellow paper](docs/yellow-paper.md)
