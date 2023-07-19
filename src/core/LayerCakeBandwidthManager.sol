@@ -2,7 +2,7 @@
 // Copyright (c) 2023, Flare Mainnet Holdings Ltd.
 // All rights reserved.
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 contract LayerCakeBandwidthManager {
     struct BandwidthProvider {
@@ -23,24 +23,24 @@ contract LayerCakeBandwidthManager {
     uint256 public immutable bandwidthPeriod;
     uint256 public immutable bandwidthDepositDenominator;
     uint256 public immutable defaultNegationCost;
-    uint256 public immutable negationCounterReset;
-    uint256 public immutable negationCostResetPeriod;
     uint256 public immutable negationRewardDenominator;
 
     constructor(
-        address _layerCakeContract,
-        uint256 _reorgAssumption,
-        uint256 _bandwidthDepositDenominator,
-        uint256 _defaultNegationCost
+        address cLayerCakeContract,
+        uint256 cReorgAssumption,
+        uint256 cBandwidthDepositDenominator,
+        uint256 cDefaultNegationCost
     ) {
-        layerCakeContract = _layerCakeContract;
-        reorgAssumption = _reorgAssumption;
+        require(cLayerCakeContract != address(0), "LCBMC1");
+        require(cReorgAssumption > 0, "LCBMC2");
+        require(cBandwidthDepositDenominator > 0, "LCBMC3");
+        require(cDefaultNegationCost > 0, "LCBMC4");
+        layerCakeContract = cLayerCakeContract;
+        reorgAssumption = cReorgAssumption;
         bandwidthPeriod = 2 * reorgAssumption;
-        bandwidthDepositDenominator = _bandwidthDepositDenominator;
-        defaultNegationCost = _defaultNegationCost;
-        negationCounterReset = bandwidthDepositDenominator;
-        negationCostResetPeriod = negationCounterReset * bandwidthPeriod;
-        negationRewardDenominator = 2 * bandwidthDepositDenominator;
+        bandwidthDepositDenominator = cBandwidthDepositDenominator;
+        defaultNegationCost = cDefaultNegationCost;
+        negationRewardDenominator = 10 * bandwidthDepositDenominator;
     }
 
     mapping(address => BandwidthProvider) public bpInfo;
@@ -55,105 +55,101 @@ contract LayerCakeBandwidthManager {
     // BP parameter functions
     // ==================
 
-    function proveBandwidth(address _bandwidthProvider, uint256 _amount) external layerCakeOnly {
-        proveBandwidthPrivate(_bandwidthProvider, _amount, true);
+    function proveBandwidth(address bandwidthProvider, uint256 amount) external layerCakeOnly {
+        _proveBandwidthPrivate(bandwidthProvider, amount, true);
     }
 
-    function proveBandwidthPrivate(address _bandwidthProvider, uint256 _amount, bool _addToUsedBandwidth) private {
-        // Prove that the bandwidth provider calling this function has free bandwidth >= _amount
-        BandwidthProvider memory bp = bpInfo[_bandwidthProvider];
+    function _proveBandwidthPrivate(address bandwidthProvider, uint256 amount, bool addToUsedBandwidth) private {
+        // Prove that the bandwidth provider calling this function has free bandwidth >= amount
+        BandwidthProvider memory bp = bpInfo[bandwidthProvider];
         require(!bp.negated && block.timestamp - bp.timeLastNegated > bandwidthPeriod, "PBP1");
         if ((block.timestamp - bp.startTime) / bandwidthPeriod > (bp.timeLastActive - bp.startTime) / bandwidthPeriod) {
             // New bandwidth period
-            if (_amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth) {
+            if (amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth) {
                 require(block.timestamp - bp.timeLastActive > reorgAssumption, "PBP2");
             }
             bp.currentUsedBandwidth = 0;
         }
-        require(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= _amount, "PBP3");
+        require(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount, "PBP3");
         bp.timeLastActive = block.timestamp;
         bp.negationCounter = 0;
-        if (_addToUsedBandwidth) {
-            bp.currentUsedBandwidth = bp.currentUsedBandwidth + _amount;
+        if (addToUsedBandwidth) {
+            bp.currentUsedBandwidth = bp.currentUsedBandwidth + amount;
         }
-        bpInfo[_bandwidthProvider] = bp;
+        bpInfo[bandwidthProvider] = bp;
     }
 
-    function addBandwidth(address _bandwidthProvider, uint256 _bandwidthAmount)
+    function addBandwidth(address bandwidthProvider, uint256 bandwidthAmount)
         external
         layerCakeOnly
-        returns (uint256 _depositedAmount)
+        returns (uint256 depositedAmount)
     {
-        BandwidthProvider memory bp = bpInfo[_bandwidthProvider];
+        BandwidthProvider memory bp = bpInfo[bandwidthProvider];
         bp.timeLastActive = block.timestamp;
         require(!bp.negated, "AB1");
         if (bp.startTime == 0) {
             // This is a new BP
             bp.startTime = bp.timeLastActive;
         }
-        // Require that the added bandwidth is divisible by BANDWIDTH_DEPOSIT_DENOMINATOR without a remainder
-        require(_bandwidthAmount % bandwidthDepositDenominator == 0, "AB2");
-        _depositedAmount = _bandwidthAmount + (_bandwidthAmount / bandwidthDepositDenominator);
-        bp.currentTotalBandwidth = bp.currentTotalBandwidth + _bandwidthAmount;
+        // Require that the added bandwidth is divisible by BANDWIDTHDEPOSITDENOMINATOR without a remainder
+        require(bandwidthAmount % bandwidthDepositDenominator == 0, "AB2");
+        depositedAmount = bandwidthAmount + (bandwidthAmount / bandwidthDepositDenominator);
+        bp.currentTotalBandwidth = bp.currentTotalBandwidth + bandwidthAmount;
         bp.negationCounter = 0;
-        bpInfo[_bandwidthProvider] = bp;
+        bpInfo[bandwidthProvider] = bp;
     }
 
-    function subtractBandwidth(address _bandwidthProvider, uint256 _bandwidthAmount)
+    function subtractBandwidth(address bandwidthProvider, uint256 bandwidthAmount)
         external
         layerCakeOnly
-        returns (uint256 _withdrawnAmount)
+        returns (uint256 withdrawnAmount)
     {
-        proveBandwidthPrivate(_bandwidthProvider, _bandwidthAmount, false);
-        BandwidthProvider memory bp = bpInfo[_bandwidthProvider];
-        require(_bandwidthAmount <= bp.currentTotalBandwidth, "SB1");
+        _proveBandwidthPrivate(bandwidthProvider, bandwidthAmount, false);
+        BandwidthProvider memory bp = bpInfo[bandwidthProvider];
+        require(bandwidthAmount <= bp.currentTotalBandwidth, "SB1");
         // Require that the subtracted bandwidth is divisible by bandwidthDepositDenominator without a remainder
-        require(_bandwidthAmount % bandwidthDepositDenominator == 0, "SB2");
-        _withdrawnAmount = _bandwidthAmount + (_bandwidthAmount / bandwidthDepositDenominator);
-        bp.currentTotalBandwidth = bp.currentTotalBandwidth - _bandwidthAmount;
-        bpInfo[_bandwidthProvider] = bp;
+        require(bandwidthAmount % bandwidthDepositDenominator == 0, "SB2");
+        withdrawnAmount = bandwidthAmount + (bandwidthAmount / bandwidthDepositDenominator);
+        bp.currentTotalBandwidth = bp.currentTotalBandwidth - bandwidthAmount;
+        bpInfo[bandwidthProvider] = bp;
     }
 
     function negateBp(
-        address _bandwidthProvider,
-        uint256 _depositedAmount,
-        uint256 _fee,
-        bool _initialNegation,
-        bytes32 _invalidExecutionProofId
+        address bandwidthProvider,
+        uint256 depositedAmount,
+        uint256 fee,
+        bool initialNegation,
+        bytes32 invalidExecutionProofId
     ) external layerCakeOnly returns (uint256 executionAmount) {
-        BandwidthProvider memory bp = bpInfo[_bandwidthProvider];
+        BandwidthProvider memory bp = bpInfo[bandwidthProvider];
         if (bp.negated && bp.prevInvalidExecutionProofId != 0x0) {
-            require(bp.prevInvalidExecutionProofId == _invalidExecutionProofId, "NB1");
+            require(bp.prevInvalidExecutionProofId == invalidExecutionProofId, "NB1");
         }
         if (!bp.negated) {
-            if (
-                bp.timeLastNegated > bp.timeLastActive && block.timestamp - bp.timeLastActive >= negationCostResetPeriod
-                    && bp.negationCounter > negationCounterReset
-                    && block.timestamp - bp.timeLastNegated < 2 * bandwidthPeriod
-            ) {
-                require(_depositedAmount - _fee == bp.currentTotalBandwidth, "NB2");
+            if (bp.negationCounter > 1) {
+                require(depositedAmount - fee == bp.currentTotalBandwidth, "NB2");
                 bp.negationCounter = 0;
             } else {
-                require(_depositedAmount - _fee == defaultNegationCost, "NB3");
+                require(depositedAmount - fee == defaultNegationCost, "NB3");
             }
             bp.negationCounter = bp.negationCounter + 1;
-            executionAmount = _depositedAmount + (bp.currentTotalBandwidth / negationRewardDenominator);
+            executionAmount = depositedAmount + (bp.currentTotalBandwidth / negationRewardDenominator);
         } else {
-            require(_depositedAmount - _fee == bp.currentTotalBandwidth, "NB4");
-            executionAmount = _depositedAmount + defaultNegationCost;
+            require(depositedAmount - fee == bp.currentTotalBandwidth, "NB4");
+            executionAmount = depositedAmount + defaultNegationCost;
         }
         bp.negated = !bp.negated;
-        require(_initialNegation == bp.negated, "NB5");
+        require(initialNegation == bp.negated, "NB5");
         bp.timeLastNegated = block.timestamp;
-        bp.prevInvalidExecutionProofId = _invalidExecutionProofId;
-        bpInfo[_bandwidthProvider] = bp;
+        bp.prevInvalidExecutionProofId = invalidExecutionProofId;
+        bpInfo[bandwidthProvider] = bp;
         return executionAmount;
     }
 
-    function updateBpSuggestedFee(uint256 _amount) external {
+    function updateBpSuggestedFee(uint256 amount) external {
         BandwidthProvider memory bp = bpInfo[msg.sender];
         require(bp.currentTotalBandwidth > 0, "UBF1");
-        bpSuggestedFee[msg.sender] = _amount;
-        emit BpSuggestedFeeUpdated(msg.sender, _amount);
+        bpSuggestedFee[msg.sender] = amount;
+        emit BpSuggestedFeeUpdated(msg.sender, amount);
     }
 }

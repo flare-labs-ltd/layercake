@@ -25,7 +25,7 @@ forge script script/src/TransferDeposits.s.sol:TransferDeposits --rpc-url $ORIGI
 forge script script/src/TransportedTokenDeploy.s.sol:TransportedTokenDeploy --rpc-url $DESTINATION_RPC_URL --broadcast -vvv
 
 # Deploy LayerCake on the destination-side
-forge script script/src/DestinationLayerCake.s.sol:DestinationLayerCake --gas-estimate-multiplier 110 --rpc-url $DESTINATION_RPC_URL --broadcast -vvv
+forge script script/src/DestinationLayerCake.s.sol:DestinationLayerCake --verify --etherscan-api-key $ETHERSCAN_API_KEY --gas-estimate-multiplier 110 --rpc-url $DESTINATION_RPC_URL --broadcast -vvv
 
 # Deploy LayerCakeDestinationDeploy on the destination-side
 forge script script/src/DestinationDeploy.s.sol:DestinationDeploy --rpc-url $DESTINATION_RPC_URL --broadcast -vvv

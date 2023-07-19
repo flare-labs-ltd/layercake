@@ -2,7 +2,7 @@
 // Copyright (c) 2023, Flare Mainnet Holdings Ltd.
 // All rights reserved.
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.19;
 
 // Private keys convention using vm.addr()
 // 1000+: Origin-chain bandwidth providers
@@ -39,7 +39,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         );
         assertEq(
             negationOperations.amount - negationOperations.fee,
-            6000 // defaultNegationCost (1000) + 5% of currentTotalBandwidth (5000)
+            2000 // defaultNegationCost (1000) + 1% of currentTotalBandwidth (1000)
         );
     }
 
@@ -89,8 +89,8 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         vm.warp(c.deployTimestamp() + 2 * c.reorgAssumption());
         assertEq(c.originToken().balanceOf(destinationBp1), 0);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
-        assertEq(c.originToken().balanceOf(destinationBp1), 6000);
-        assertEq(c.destinationToken().balanceOf(destinationBp1) + c.originToken().balanceOf(destinationBp1), 995000); // The BP lost 5000 tokens
+        assertEq(c.originToken().balanceOf(destinationBp1), 2000);
+        assertEq(c.destinationToken().balanceOf(destinationBp1) + c.originToken().balanceOf(destinationBp1), 991000); // The BP lost 5000 tokens
     }
 
     function testFailSelfNegationRemoveBandwidth() public {
@@ -113,8 +113,8 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         vm.warp(c.deployTimestamp() + 2 * c.reorgAssumption());
         assertEq(c.originToken().balanceOf(destinationBp1), 0);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
-        assertEq(c.originToken().balanceOf(destinationBp1), 6000);
-        assertEq(c.destinationToken().balanceOf(destinationBp1) + c.originToken().balanceOf(destinationBp1), 995000); // The BP lost 5000 tokens
+        assertEq(c.originToken().balanceOf(destinationBp1), 2000);
+        assertEq(c.destinationToken().balanceOf(destinationBp1) + c.originToken().balanceOf(destinationBp1), 991000); // The BP lost 5000 tokens
 
         // The following call will fail: the BP calls removeBandwidth()
         BandwidthProviderController(destinationBp1).removeBandwidth(c.destinationLayercake(), 100000);
