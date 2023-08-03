@@ -21,11 +21,6 @@ contract LayerCakeStorageSlot is LayerCakeExecutionProof {
     mapping(bytes32 => bool) public openedExecutionIds;
     mapping(bytes32 => ExecutionPreparation) public preparedExecutionIds;
 
-    uint256 public totalStored;
-    uint256 public totalPrepared;
-    mapping(address => uint256) public totalStoredPerAddress;
-    mapping(address => uint256) public totalPreparedPerAddress;
-
     constructor(address cStorageManager, uint256 cStartTime, uint256 cStorageEndTime) {
         require(cStorageManager != address(0), "LCS1");
         require(cStartTime > 0, "LCS2");
@@ -60,13 +55,11 @@ contract LayerCakeStorageSlot is LayerCakeExecutionProof {
     // Set Storage functions
     // ==================
 
-    function storeExecutionId(bytes32 executionId, address sender, uint256 amount) external storageManagerOnly {
+    function storeExecutionId(bytes32 executionId) external storageManagerOnly {
         openedExecutionIds[executionId] = true;
-        totalStored = totalStored + amount;
-        totalStoredPerAddress[sender] = totalStoredPerAddress[sender] + amount;
     }
 
-    function prepareExecutionId(bytes32 executionId, address preparer, ExecutionProof memory executionProof)
+    function prepareExecutionId(bytes32 executionId, ExecutionProof memory executionProof)
         external
         storageManagerOnly
         returns (uint256, uint256, bool)
@@ -88,10 +81,6 @@ contract LayerCakeStorageSlot is LayerCakeExecutionProof {
         executionIdInfo.totalPrepared = executionIdInfo.totalPrepared + executionProof.partialAmount;
         executionIdInfo.feesPaid = executionIdInfo.feesPaid + partialFee;
         preparedExecutionIds[executionId] = executionIdInfo;
-        if (preparer != executionProof.operations.sender) {
-            totalPreparedPerAddress[preparer] = totalPreparedPerAddress[preparer] + executionProof.partialAmount;
-            totalPrepared = totalPrepared + executionProof.partialAmount;
-        }
         return (partialFee, executionProof.partialAmount, executionIdInfo.executionPrepared);
     }
 

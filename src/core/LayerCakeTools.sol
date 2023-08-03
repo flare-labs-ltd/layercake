@@ -23,7 +23,7 @@ contract LayerCakeTools is LayerCakeExecutionProof {
         uint256 depositCap;
         uint256 reorgAssumption;
         uint256 bandwidthDepositDenominator;
-        uint256 defaultNegationCost;
+        uint256 minBandwidth;
         address forwardedFeeRecipient;
         uint256 forwardedFeeDenominator;
     }
@@ -43,14 +43,6 @@ contract LayerCakeTools is LayerCakeExecutionProof {
     // =================================================================================
     // FUNCTIONS
     // =================================================================================
-
-    function getPathwayId(uint256 originChainId, uint256 destinationChainId, uint256 assetId, uint256 contractId)
-        public
-        pure
-        returns (bytes32 pathwayId)
-    {
-        pathwayId = keccak256(abi.encode("layercakePathwayId", originChainId, destinationChainId, assetId, contractId));
-    }
 
     function getExecutionId(bytes32 pathwayId, Operations memory operations)
         public
