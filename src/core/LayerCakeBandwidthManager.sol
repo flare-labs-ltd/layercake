@@ -16,6 +16,10 @@ contract LayerCakeBandwidthManager {
         uint256 currentUsedBandwidth;
     }
 
+    uint256 public constant BANDWIDTH_PERIOD_MULTIPLE = 2;
+    uint256 public constant MAX_BANDWIDTH_MULTIPLE = 1000;
+    uint256 public constant NEGATION_REWARD_MULTIPLE = 10;
+
     address public immutable layerCakeContract;
     uint256 public immutable reorgAssumption;
     uint256 public immutable bandwidthDepositDenominator;
@@ -55,10 +59,12 @@ contract LayerCakeBandwidthManager {
     function _proveBandwidthPrivate(address bandwidthProvider, uint256 amount, bool addToUsedBandwidth) private {
         // Prove that the bandwidth provider calling this function has free bandwidth >= amount
         BandwidthProvider memory bp = bpInfo[bandwidthProvider];
-        require(!bp.negated && block.timestamp - bp.timeLastNegated > 2 * reorgAssumption, "PBP1");
+        require(
+            !bp.negated && block.timestamp - bp.timeLastNegated > BANDWIDTH_PERIOD_MULTIPLE * reorgAssumption, "PBP1"
+        );
         if (
-            (block.timestamp - bp.startTime) / (2 * reorgAssumption)
-                > (bp.timeLastActive - bp.startTime) / (2 * reorgAssumption)
+            (block.timestamp - bp.startTime) / (BANDWIDTH_PERIOD_MULTIPLE * reorgAssumption)
+                > (bp.timeLastActive - bp.startTime) / (BANDWIDTH_PERIOD_MULTIPLE * reorgAssumption)
         ) {
             // New bandwidth period
             if (amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth) {
@@ -93,6 +99,7 @@ contract LayerCakeBandwidthManager {
         bp.currentTotalBandwidth = bp.currentTotalBandwidth + bandwidthAmount;
         // Require that the added bandwidth is greater than or equal to the default negation cost
         require(bp.currentTotalBandwidth >= minBandwidth, "AB3");
+        require(bp.currentTotalBandwidth <= minBandwidth * MAX_BANDWIDTH_MULTIPLE, "AB4");
         bp.negationCounter = 0;
         bpInfo[bandwidthProvider] = bp;
     }
@@ -134,7 +141,8 @@ contract LayerCakeBandwidthManager {
                 require(depositedAmount - fee == minBandwidth, "NB3");
             }
             bp.negationCounter = bp.negationCounter + 1;
-            executionAmount = depositedAmount + (bp.currentTotalBandwidth / (10 * bandwidthDepositDenominator));
+            executionAmount =
+                depositedAmount + (bp.currentTotalBandwidth / (NEGATION_REWARD_MULTIPLE * bandwidthDepositDenominator));
         } else {
             require(depositedAmount - fee == bp.currentTotalBandwidth, "NB4");
             executionAmount = depositedAmount + minBandwidth;
