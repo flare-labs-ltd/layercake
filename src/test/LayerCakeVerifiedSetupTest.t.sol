@@ -64,17 +64,13 @@ contract LayerCakeVerifiedSetupTest is Test, LayerCakeTools {
         // bandwidthManager constants
         assertEq(originBandwidthManager.layerCakeContract(), address(c.originLayercake()));
         assertEq(originBandwidthManager.reorgAssumption(), c.reorgAssumption());
-        assertEq(originBandwidthManager.bandwidthPeriod(), 2 * c.reorgAssumption());
         assertEq(originBandwidthManager.bandwidthDepositDenominator(), c.bandwidthDepositDenominator());
-        assertEq(originBandwidthManager.defaultNegationCost(), c.defaultNegationCost());
-        assertEq(originBandwidthManager.negationRewardDenominator(), 10 * c.bandwidthDepositDenominator());
+        assertEq(originBandwidthManager.minBandwidth(), c.minBandwidth());
 
         assertEq(destinationBandwidthManager.layerCakeContract(), address(c.destinationLayercake()));
         assertEq(destinationBandwidthManager.reorgAssumption(), c.reorgAssumption());
-        assertEq(destinationBandwidthManager.bandwidthPeriod(), 2 * c.reorgAssumption());
         assertEq(destinationBandwidthManager.bandwidthDepositDenominator(), c.bandwidthDepositDenominator());
-        assertEq(destinationBandwidthManager.defaultNegationCost(), c.defaultNegationCost());
-        assertEq(destinationBandwidthManager.negationRewardDenominator(), 10 * c.bandwidthDepositDenominator());
+        assertEq(destinationBandwidthManager.minBandwidth(), c.minBandwidth());
 
         // Deposits
         uint256 originDepositedAmount = 86000000;

@@ -30,7 +30,7 @@ contract DestinationDeploy is Test, Script, LayerCakeDeployTools, LayerCakeTools
     uint256 public contractId;
     uint256 public reorgAssumption;
     uint256 public bandwidthDepositDenominator;
-    uint256 public defaultNegationCost;
+    uint256 public minBandwidth;
     uint256 public depositCap;
 
     // ChainIds

@@ -16,7 +16,7 @@ contract LayerCakeStorageManager is LayerCakeExecutionProof {
 
     // Each slot lasts for STORAGE_TIME, and a new storage contract is automatically deployed every STORAGE_TIME,
     // overwriting slots from STORAGE_SLOTS many slots ago.
-    address[STORAGE_SLOTS] public layerCakeSTORAGE_SLOTS;
+    address[STORAGE_SLOTS] public slots;
     uint256 public storageEpoch;
 
     constructor(address cLayerCakeContract) {
@@ -28,7 +28,7 @@ contract LayerCakeStorageManager is LayerCakeExecutionProof {
                                     block.timestamp, 
                                     block.timestamp + STORAGE_TIME
                                 );
-        layerCakeSTORAGE_SLOTS[0] = address(newLayerCakeStorageSlot);
+        slots[0] = address(newLayerCakeStorageSlot);
     }
 
     modifier layerCakeOnly() {
@@ -69,12 +69,12 @@ contract LayerCakeStorageManager is LayerCakeExecutionProof {
                 layerCakeDeployTime + (thisStorageEpoch * STORAGE_TIME),
                 layerCakeDeployTime + ((thisStorageEpoch + 1) * STORAGE_TIME)
             );
-            layerCakeSTORAGE_SLOTS[thisStorageSlot] = address(newLayerCakeStorageSlot);
+            slots[thisStorageSlot] = address(newLayerCakeStorageSlot);
             storageEpoch = thisStorageEpoch;
         }
         require(
-            timestamp >= LayerCakeStorageSlot(layerCakeSTORAGE_SLOTS[thisStorageSlot]).storageStartTime()
-                && timestamp < LayerCakeStorageSlot(layerCakeSTORAGE_SLOTS[thisStorageSlot]).storageEndTime(),
+            timestamp >= LayerCakeStorageSlot(slots[thisStorageSlot]).storageStartTime()
+                && timestamp < LayerCakeStorageSlot(slots[thisStorageSlot]).storageEndTime(),
             "CCSS2"
         );
         return thisStorageSlot;
@@ -91,7 +91,7 @@ contract LayerCakeStorageManager is LayerCakeExecutionProof {
         if (newSlotRequired) {
             return false;
         }
-        return LayerCakeStorageSlot(layerCakeSTORAGE_SLOTS[storageSlot]).getExecutionIdStored(executionId);
+        return LayerCakeStorageSlot(slots[storageSlot]).getExecutionIdStored(executionId);
     }
 
     function getExecutionIdPrepared(uint256 executionTime, bytes32 executionId) public view returns (bool, uint256) {
@@ -101,35 +101,27 @@ contract LayerCakeStorageManager is LayerCakeExecutionProof {
         if (newSlotRequired) {
             return (false, 0);
         }
-        return LayerCakeStorageSlot(layerCakeSTORAGE_SLOTS[storageSlot]).getExecutionIdPrepared(executionId);
+        return LayerCakeStorageSlot(slots[storageSlot]).getExecutionIdPrepared(executionId);
     }
 
     // ==================
     // Set Storage functions
     // ==================
 
-    function storeExecutionId(uint256 executionTime, bytes32 executionId, address sender, uint256 amount)
-        external
-        layerCakeOnly
-    {
-        LayerCakeStorageSlot(layerCakeSTORAGE_SLOTS[_checkCreateStorageSlot(executionTime)]).storeExecutionId(
-            executionId, sender, amount
-        );
+    function storeExecutionId(uint256 executionTime, bytes32 executionId) external layerCakeOnly {
+        LayerCakeStorageSlot(slots[_checkCreateStorageSlot(executionTime)]).storeExecutionId(executionId);
     }
 
-    function prepareExecutionId(bytes32 executionId, address preparer, ExecutionProof memory executionProof)
+    function prepareExecutionId(bytes32 executionId, ExecutionProof memory executionProof)
         external
         layerCakeOnly
         returns (uint256, uint256, bool)
     {
-        return LayerCakeStorageSlot(
-            layerCakeSTORAGE_SLOTS[_checkCreateStorageSlot(executionProof.operations.executionTime)]
-        ).prepareExecutionId(executionId, preparer, executionProof);
+        return LayerCakeStorageSlot(slots[_checkCreateStorageSlot(executionProof.operations.executionTime)])
+            .prepareExecutionId(executionId, executionProof);
     }
 
     function increaseFee(uint256 executionTime, bytes32 executionId, uint256 amount) external layerCakeOnly {
-        LayerCakeStorageSlot(layerCakeSTORAGE_SLOTS[_checkCreateStorageSlot(executionTime)]).increaseFee(
-            executionId, amount
-        );
+        LayerCakeStorageSlot(slots[_checkCreateStorageSlot(executionTime)]).increaseFee(executionId, amount);
     }
 }

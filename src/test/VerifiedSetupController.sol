@@ -43,7 +43,7 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
     uint256 public contractId = 1;
     uint256 public reorgAssumption = 6 hours;
     uint256 public bandwidthDepositDenominator = 10;
-    uint256 public defaultNegationCost = 1000;
+    uint256 public minBandwidth = 1000;
     uint256 public depositCap = 2 ** 256 - 1;
     uint256 public forwardedFeeDenominator = 1000; // 10 basis points
 
@@ -99,7 +99,7 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
             depositCap,
             reorgAssumption,
             bandwidthDepositDenominator,
-            defaultNegationCost,
+            minBandwidth,
             originForwardedFeeRecipient,
             forwardedFeeDenominator
         );
@@ -161,7 +161,7 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
             depositCap,
             reorgAssumption,
             bandwidthDepositDenominator,
-            defaultNegationCost,
+            minBandwidth,
             destinationForwardedFeeRecipient,
             forwardedFeeDenominator
         );

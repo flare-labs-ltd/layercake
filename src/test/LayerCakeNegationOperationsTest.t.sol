@@ -39,7 +39,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         );
         assertEq(
             negationOperations.amount - negationOperations.fee,
-            2000 // defaultNegationCost (1000) + 1% of currentTotalBandwidth (1000)
+            2000 // minBandwidth (1000) + 1% of currentTotalBandwidth (1000)
         );
     }
 
@@ -65,7 +65,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         );
         assertEq(
             negationOperations.amount - negationOperations.fee,
-            101000 // currentTotalBandwidth + defaultNegationCost
+            101000 // currentTotalBandwidth + minBandwidth
         );
     }
 

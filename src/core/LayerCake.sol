@@ -42,8 +42,16 @@ contract LayerCake is LayerCakeTools {
 
     constructor(ConstructorParams memory params) {
         isDestinationChain = params.isDestinationChain;
-        departingPathwayId = getPathwayId(params.thisChainId, params.oppositeChainId, params.assetId, params.contractId);
-        arrivingPathwayId = getPathwayId(params.oppositeChainId, params.thisChainId, params.assetId, params.contractId);
+        departingPathwayId = keccak256(
+            abi.encode(
+                "layercakePathwayId", params.thisChainId, params.oppositeChainId, params.assetId, params.contractId
+            )
+        );
+        arrivingPathwayId = keccak256(
+            abi.encode(
+                "layercakePathwayId", params.oppositeChainId, params.thisChainId, params.assetId, params.contractId
+            )
+        );
         token = IERC20(params.tokenAddress);
         depositCap = params.depositCap;
         forwardedFeeRecipient = params.forwardedFeeRecipient;
@@ -52,7 +60,7 @@ contract LayerCake is LayerCakeTools {
                                     address(this), 
                                     params.reorgAssumption,
                                     params.bandwidthDepositDenominator,
-                                    params.defaultNegationCost);
+                                    params.minBandwidth);
         storageManager = new LayerCakeStorageManager(address(this));
         calldataInterface = new LayerCakeCalldataInterface();
     }
@@ -89,9 +97,9 @@ contract LayerCake is LayerCakeTools {
             require(token.transferFrom(msg.sender, forwardedFeeRecipient, forwardedFee), "SSO4");
             require(token.balanceOf(forwardedFeeRecipient) > forwardedFeeRecipientCurrentBalance, "SSO5");
         }
-        uint256 thisCurrentBalance = token.balanceOf(address(this));
+        uint256 currentBalance = token.balanceOf(address(this));
         require(token.transferFrom(msg.sender, address(this), operations.amount), "SSO6");
-        operations.amount = token.balanceOf(address(this)) - thisCurrentBalance;
+        operations.amount = token.balanceOf(address(this)) - currentBalance;
         _storeOperations(operations);
     }
 
@@ -129,7 +137,9 @@ contract LayerCake is LayerCakeTools {
 
     function addBandwidth(uint256 bandwidthAmount) external {
         uint256 depositedAmount = bandwidthManager.addBandwidth(msg.sender, bandwidthAmount);
+        uint256 currentBalance = token.balanceOf(address(this));
         require(token.transferFrom(msg.sender, address(this), depositedAmount), "AB1");
+        bandwidthAmount = token.balanceOf(address(this)) - currentBalance;
         require(token.balanceOf(address(this)) <= depositCap, "AB2");
         emit BandwidthChanged(msg.sender, true, bandwidthAmount);
     }
@@ -142,7 +152,9 @@ contract LayerCake is LayerCakeTools {
 
     function increaseFee(bytes32 executionId, uint256 executionTime, uint256 addedFee) external {
         require(block.timestamp >= executionTime, "IF1");
+        uint256 currentBalance = token.balanceOf(address(this));
         require(token.transferFrom(msg.sender, address(this), addedFee), "IF2");
+        addedFee = token.balanceOf(address(this)) - currentBalance;
         require(token.balanceOf(address(this)) <= depositCap, "IF3");
         storageManager.increaseFee(executionTime, executionId, addedFee);
     }
@@ -244,7 +256,7 @@ contract LayerCake is LayerCakeTools {
         operations.executionTime = block.timestamp;
         bytes32 executionId = getExecutionId(departingPathwayId, operations);
         require(!storageManager.getExecutionIdStored(operations.executionTime, executionId), "SO6");
-        storageManager.storeExecutionId(operations.executionTime, executionId, operations.sender, operations.amount);
+        storageManager.storeExecutionId(operations.executionTime, executionId);
         emit OperationsStored(executionId, operations);
     }
 
@@ -253,7 +265,7 @@ contract LayerCake is LayerCakeTools {
         require(block.timestamp >= executionProof.operations.executionTime, "EO2");
         bytes32 executionId = getExecutionId(arrivingPathwayId, executionProof.operations);
         (uint256 partialFee, uint256 bandwidthUsed, bool executionPrepared) =
-            storageManager.prepareExecutionId(executionId, msg.sender, executionProof);
+            storageManager.prepareExecutionId(executionId, executionProof);
         if (!cancel) {
             require(recoverSigner(executionId, executionProof) == msg.sender, "EO3");
             bandwidthManager.proveBandwidth(msg.sender, bandwidthUsed);
