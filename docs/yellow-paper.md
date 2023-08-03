@@ -174,7 +174,7 @@ function addBandwidth(
     external
 ```
 
-This deposits `_bandwidthAmount + _bandwidthAmount/bandwidthDepositDenominator` tokens and gives the sender `_bandwidthAmount` new bandwidth that they can immediately start operating with on the chain that this deposit occurs. `_bandwidthAmount/bandwidthDepositDenominator` is a deposit of tokens which are held as an incentive to leave the system in the correct manner by using the `subtractBandwidth()` function. If the bandwidth provider leaves the system in any other manner, e.g. using `executeOperations()` without a corresponding valid `storeOperations()`, then they lose this deposit.
+This deposits `_bandwidthAmount + _bandwidthAmount/bandwidthDepositDenominator` tokens and gives the sender `_bandwidthAmount` new bandwidth that they can immediately start operating with on the chain that this deposit occurs. `_bandwidthAmount/bandwidthDepositDenominator` is a deposit of tokens which are held as an incentive to leave the system in the correct manner by using the `subtractBandwidth()` function. If the bandwidth provider leaves the system in any other manner, e.g. using `executeOperations()` without a corresponding valid `storeOperations()`, then they lose this deposit. Bandwidth providers must maintain a bandwidth of between `minBandwidth` and `minBandwidth * MAX_BANDWIDTH_MULTIPLE` in order to operate in the system, where `MAX_BANDWIDTH_MULTIPLE` is a constant e.g. 1000. 
 
 ```solidity
 function subtractBandwidth(
@@ -229,7 +229,7 @@ function storeNegationOperations(
     nonReentrant
 ```
 
-Within the above `_operations` struct, `negatedBandwidthProvider` is the bandwidth provider that performed the invalid execution, `initialNegation` is set to true, `invalidExecutionProofId` is the hash of the invalid execution performed by the bandwidth provider and `amount` is set to the value of `minBandwidth` which is the minimum amount of tokens that a bandwidth provider needs to have deposited as bandwidth in the system in order to operate.
+Within the above `_operations` struct, `negatedBandwidthProvider` is the bandwidth provider that performed the invalid execution, `initialNegation` is set to true, `invalidExecutionProofId` is the hash of the invalid execution performed by the bandwidth provider and `amount` is set to the value of `minBandwidth`.
 
 This call to `storeNegationOperations()` deposits `minBandwidth` tokens from the sender, but updates the value of `_operations.amount` to be equal to `minBandwidth + bp.currentTotalBandwidth/negationRewardDenominator` before storing the operations on this chain. This in effect charges the sender `minBandwidth` tokens, but authorizes an execution of a higher value on the opposite chain for that sender. This is possible because on the opposite chain where the corresponding negation execution is performed, it is required that the referenced execution proof is invalid before permitting the transfer of `minBandwidth + bp.currentTotalBandwidth/negationRewardDenominator` to the account that stored the negation operations. 
 
