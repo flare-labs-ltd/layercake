@@ -124,12 +124,11 @@ contract NegationOperationsController is Test, LayerCakeTools {
         // Negate the BP
         address destinationUser1 = address(vm.addr(2001));
         vm.etch(destinationUser1, c.userControllerCode());
-        // Send user 1000 + 10 testWETH for the default negation cost plus a fee of 10
-        uint256 minBandwidth = 1000;
+        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
 
         _negationOperations = Operations(
             1,
-            minBandwidth + 10,
+            100 + 10,
             10,
             destinationUser1,
             vm.addr(4000), // destinationUser1
@@ -157,7 +156,6 @@ contract NegationOperationsController is Test, LayerCakeTools {
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as negated
-        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
         (bool negated,,,,,,,) = destinationBandwidthManager.bpInfo(_negationOperations.negatedBandwidthProvider);
         assertTrue(negated);
     }
@@ -208,11 +206,11 @@ contract NegationOperationsController is Test, LayerCakeTools {
         // Negate the BP
         uint256 destinationBpPk1 = 2000;
         address destinationBp1 = vm.addr(destinationBpPk1);
-        uint256 minBandwidth = 1000;
+        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
 
         _negationOperations = Operations(
             1,
-            minBandwidth,
+            100,
             0,
             destinationBp1,
             destinationBp1, // destinationUser1
@@ -238,7 +236,6 @@ contract NegationOperationsController is Test, LayerCakeTools {
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as negated
-        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
         (bool negated,,,,,,,) = destinationBandwidthManager.bpInfo(_negationOperations.negatedBandwidthProvider);
         assertTrue(negated);
     }
