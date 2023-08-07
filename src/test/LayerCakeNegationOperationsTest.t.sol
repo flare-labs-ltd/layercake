@@ -39,7 +39,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         );
         assertEq(
             negationOperations.amount - negationOperations.fee,
-            2000 // minBandwidth (1000) + 1% of currentTotalBandwidth (1000)
+            1100 // minBandwidth (1000) + 1% of currentTotalBandwidth (1000)
         );
     }
 
@@ -65,7 +65,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         );
         assertEq(
             negationOperations.amount - negationOperations.fee,
-            101000 // currentTotalBandwidth + minBandwidth
+            100100 // currentTotalBandwidth + minBandwidth
         );
     }
 
@@ -89,7 +89,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         vm.warp(c.deployTimestamp() + 2 * c.reorgAssumption());
         assertEq(c.originToken().balanceOf(destinationBp1), 0);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
-        assertEq(c.originToken().balanceOf(destinationBp1), 2000);
+        assertEq(c.originToken().balanceOf(destinationBp1), 1100);
         assertEq(c.destinationToken().balanceOf(destinationBp1) + c.originToken().balanceOf(destinationBp1), 991000); // The BP lost 5000 tokens
     }
 
@@ -113,7 +113,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         vm.warp(c.deployTimestamp() + 2 * c.reorgAssumption());
         assertEq(c.originToken().balanceOf(destinationBp1), 0);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
-        assertEq(c.originToken().balanceOf(destinationBp1), 2000);
+        assertEq(c.originToken().balanceOf(destinationBp1), 1100);
         assertEq(c.destinationToken().balanceOf(destinationBp1) + c.originToken().balanceOf(destinationBp1), 991000); // The BP lost 5000 tokens
 
         // The following call will fail: the BP calls removeBandwidth()

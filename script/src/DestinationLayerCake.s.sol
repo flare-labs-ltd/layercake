@@ -43,7 +43,7 @@ contract DestinationLayerCake is Test, Script, LayerCakeTools {
             vm.envUint("DEPOSIT_CAP") * 1 ether,
             vm.envUint("REORG_ASSUMPTION") * 1 hours,
             vm.envUint("BANDWIDTH_DEPOSIT_DENOMINATOR"),
-            vm.envUint("DEFAULT_NEGATION_COST") * 1 ether,
+            vm.envUint("MIN_BANDWIDTH") * 1 ether,
             vm.envAddress("DESTINATION_FORWARDED_FEE_RECIPIENT"),
             vm.envUint("FORWARDED_FEE_DENOMINATOR")
         );

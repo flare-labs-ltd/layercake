@@ -89,12 +89,14 @@ contract LayerCakeBandwidthChangesTest is Test, LayerCakeTools {
         BandwidthProviderController(destinationBp1).removeBandwidth(c.destinationLayercake(), removedBandwidthAmount);
         assertEq(c.destinationToken().balanceOf(destinationBp1), 1000010);
 
+        // Wait for 1 bandwidth period to cycle
+        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         // Add bandwidth back to the system
         BandwidthProviderController(destinationBp1).addBandwidth(
             c.destinationToken(), c.destinationLayercake(), 110000, 100000
         );
         // Wait for 1 bandwidth period to cycle
-        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
+        vm.warp(c.deployTimestamp() + (6 * c.reorgAssumption()));
         // This call will now succeed because destinationBp1 now has enough bandwidth for it
         s.standardOperationsTransferOnly(2);
     }

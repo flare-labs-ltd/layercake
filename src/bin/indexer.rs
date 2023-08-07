@@ -144,7 +144,7 @@ async fn filter_bandwidth_provider_events(
         let duration = end.duration_since(start).unwrap();
         println! {"filter response time: {:?}", duration};
         if filtered_logs.iter().len() > 0 {
-            println!("{} bandwidth changes found", filtered_logs.iter().len());
+            println!("{} event(s) found", filtered_logs.iter().len());
         }
         for log in filtered_logs.iter() {
             let raw_log: abi::RawLog = ethers::core::abi::RawLog::from(log.clone());
