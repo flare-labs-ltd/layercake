@@ -174,7 +174,7 @@ function addBandwidth(
     external
 ```
 
-This deposits `_bandwidthAmount + _bandwidthAmount/bandwidthDepositDenominator` tokens and gives the sender `_bandwidthAmount` new bandwidth that they can immediately start operating with on the chain that this deposit occurs. `_bandwidthAmount/bandwidthDepositDenominator` is a deposit of tokens which are held as an incentive to leave the system in the correct manner by using the `subtractBandwidth()` function. If the bandwidth provider leaves the system in any other manner, e.g. using `executeOperations()` without a corresponding valid `storeOperations()`, then they lose this deposit. Bandwidth providers must maintain a bandwidth of between `minBandwidth` and `minBandwidth * MAX_BANDWIDTH_MULTIPLE` in order to operate in the system, where `MAX_BANDWIDTH_MULTIPLE` is a constant e.g. 1000. 
+This deposits `_bandwidthAmount + _bandwidthAmount/bandwidthDepositDenominator` tokens and gives the sender `_bandwidthAmount` new bandwidth that they can start operating with after two bandwidth periods on the chain that this deposit occurs. `_bandwidthAmount/bandwidthDepositDenominator` is a deposit of tokens which are held as an incentive to leave the system in the correct manner by using the `subtractBandwidth()` function. If the bandwidth provider leaves the system in any other manner, e.g. using `executeOperations()` without a corresponding valid `storeOperations()`, then they lose this deposit. Bandwidth providers must maintain a bandwidth of between `minBandwidth` and `minBandwidth * MAX_BANDWIDTH_MULTIPLE` in order to operate in the system, where `MAX_BANDWIDTH_MULTIPLE` is a constant e.g. 1000. 
 
 ```solidity
 function subtractBandwidth(

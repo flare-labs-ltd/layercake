@@ -18,8 +18,6 @@ contract LayerCakeTools is LayerCakeExecutionProof {
         uint256 assetId;
         uint256 contractId;
         address tokenAddress;
-        string tokenName;
-        string tokenSymbol;
         uint256 depositCap;
         uint256 reorgAssumption;
         uint256 bandwidthDepositDenominator;

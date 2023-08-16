@@ -94,8 +94,6 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
             assetId,
             contractId,
             originTokenAddress,
-            originToken.name(),
-            originToken.symbol(),
             depositCap,
             reorgAssumption,
             bandwidthDepositDenominator,
@@ -146,7 +144,8 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
         destinationToken = new LayerCakeTransportedToken(
                                     depositCap, 
                                     originToken.name(), 
-                                    originToken.symbol());
+                                    originToken.symbol(),
+                                    originToken.decimals());
 
         // Destination deploy
         destinationConstructorParams = ConstructorParams(
@@ -156,8 +155,6 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
             assetId,
             contractId,
             address(destinationToken),
-            "",
-            "",
             depositCap,
             reorgAssumption,
             bandwidthDepositDenominator,

@@ -29,14 +29,14 @@ contract LayerCakeBandwidthChangesTest is Test, LayerCakeTools {
     }
 
     function testStandardOperationsTransferOnlyRemovingBandwidth() public {
-        vm.warp(c.deployTimestamp());
+        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         uint256 destinationBpPk1 = 2000;
         address destinationBp1 = vm.addr(destinationBpPk1);
 
         // Use 10,000 out of available 100,000 bandwidth, which earns a fee of 10 destinationToken
         s.standardOperationsTransferOnly(1);
         // Wait for 1 bandwidth period to cycle
-        vm.warp(c.deployTimestamp() + (2 * c.reorgAssumption()));
+        vm.warp(c.deployTimestamp() + (6 * c.reorgAssumption()));
         // Remove all bandwidth
         uint256 removedBandwidthAmount = 100000;
         BandwidthProviderController(destinationBp1).removeBandwidth(c.destinationLayercake(), removedBandwidthAmount);
@@ -76,27 +76,27 @@ contract LayerCakeBandwidthChangesTest is Test, LayerCakeTools {
     }
 
     function testStandardOperationsTransferOnlyRemovingBandwidth3() public {
-        vm.warp(c.deployTimestamp());
+        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         uint256 destinationBpPk1 = 2000;
         address destinationBp1 = vm.addr(destinationBpPk1);
 
         // Use 10,000 out of available 100,000 bandwidth, which earns a fee of 10 destinationToken
         s.standardOperationsTransferOnly(1);
         // Wait for 1 bandwidth period to cycle
-        vm.warp(c.deployTimestamp() + (2 * c.reorgAssumption()));
+        vm.warp(c.deployTimestamp() + (6 * c.reorgAssumption()));
         // Remove all bandwidth
         uint256 removedBandwidthAmount = 100000;
         BandwidthProviderController(destinationBp1).removeBandwidth(c.destinationLayercake(), removedBandwidthAmount);
         assertEq(c.destinationToken().balanceOf(destinationBp1), 1000010);
 
         // Wait for 1 bandwidth period to cycle
-        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
+        vm.warp(c.deployTimestamp() + (8 * c.reorgAssumption()));
         // Add bandwidth back to the system
         BandwidthProviderController(destinationBp1).addBandwidth(
             c.destinationToken(), c.destinationLayercake(), 110000, 100000
         );
-        // Wait for 1 bandwidth period to cycle
-        vm.warp(c.deployTimestamp() + (6 * c.reorgAssumption()));
+        // Wait for 2 bandwidth periods to cycle
+        vm.warp(c.deployTimestamp() + (12 * c.reorgAssumption()));
         // This call will now succeed because destinationBp1 now has enough bandwidth for it
         s.standardOperationsTransferOnly(2);
     }

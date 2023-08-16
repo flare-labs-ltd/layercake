@@ -28,7 +28,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
     }
 
     function testValidNegation() public {
-        vm.warp(c.deployTimestamp());
+        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         // Send 10,000 destinationToken to destinationBp1 without a corresponding storage
         // of operations on origin_chain
         (bytes32 invalidExecutionId, ExecutionProof memory invalidExecutionProof) = n.createInvalidExecution();
@@ -53,12 +53,12 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
     }
 
     function testReverseInvalidNegation() public {
-        vm.warp(c.deployTimestamp());
+        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         (bytes32 validExecutionId, ExecutionProof memory validExecutionProof) = n.createValidExecution();
         n.storeInitialNegationOperations(validExecutionId);
         Operations memory negationOperations = n.storeReverseNegationOperations(validExecutionId);
         n.executeValidNegationOperations(validExecutionProof, negationOperations, 2);
-        vm.warp(c.deployTimestamp() + 2 * c.reorgAssumption());
+        vm.warp(c.deployTimestamp() + (6 * c.reorgAssumption()));
         n.executeValidNegationOperations(validExecutionProof, negationOperations, 2);
         assertEq(
             c.originToken().balanceOf(negationOperations.recipient), negationOperations.amount - negationOperations.fee
@@ -70,7 +70,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
     }
 
     function testSelfNegation() public {
-        vm.warp(c.deployTimestamp());
+        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         // In this scenario, a bandwidth provider takes out their currentTotalBandwidth from the system by
         // creating an invalid execution, and then negates themself to claim the reward for doing so.
         // This test shows that the bandwidth provider loses 5% of their currentTotalBandwidth by leaving
@@ -86,7 +86,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         assertEq(c.destinationToken().balanceOf(destinationBp1), 990000);
         Operations memory negationOperations = n.storeSelfNegationOperations(invalidExecutionId);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
-        vm.warp(c.deployTimestamp() + 2 * c.reorgAssumption());
+        vm.warp(c.deployTimestamp() + 4 * c.reorgAssumption());
         assertEq(c.originToken().balanceOf(destinationBp1), 0);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
         assertEq(c.originToken().balanceOf(destinationBp1), 1100);
@@ -121,7 +121,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
     }
 
     function testNoNegationRemoveBandwidth() public {
-        vm.warp(c.deployTimestamp());
+        vm.warp(c.deployTimestamp() + 4 * c.reorgAssumption());
         // In this scenario, a bandwidth provider takes out their currentTotalBandwidth from the system
         // in the correct manner by calling removeBandwidth(), giving them back their full original balance
         // of 1,000,000 tokens

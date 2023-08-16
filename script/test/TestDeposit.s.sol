@@ -37,7 +37,7 @@ contract TestDeposit is Test, Script, LayerCakeDeployTools, LayerCakeTools {
 
         vm.startBroadcast(deployerPrivateKey);
         originToken.approve(address(originDeploy), 3 * depositAmount);
-        originDeploy.deposit(3 * depositAmount);
+        originDeploy.deposit(3 * depositAmount, deployerAddress);
         vm.stopBroadcast();
 
         string memory path = ".env";

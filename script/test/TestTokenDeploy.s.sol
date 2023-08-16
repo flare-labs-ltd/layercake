@@ -42,6 +42,12 @@ contract TestTokenDeploy is Test, Script {
         );
         vm.writeLine(path, string(abi.encodePacked("ORIGIN_TOKEN_NAME=\"", originToken.name(), "\"")));
         vm.writeLine(path, string(abi.encodePacked("ORIGIN_TOKEN_SYMBOL=\"", originToken.symbol(), "\"")));
+        vm.writeLine(
+            path,
+            string(
+                abi.encodePacked("ORIGIN_TOKEN_DECIMALS=\"", Strings.toString(uint256(originToken.decimals())), "\"")
+            )
+        );
 
         vm.stopBroadcast();
     }

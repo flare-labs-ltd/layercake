@@ -33,11 +33,11 @@ contract LayerCakeOriginDeploy is LayerCakeDeployTools, ReentrancyGuard {
         _;
     }
 
-    function deposit(uint256 amount) external preDeployOnly nonReentrant {
+    function deposit(uint256 amount, address withdrawalAddress) external preDeployOnly nonReentrant {
         require(amount > 0, "D1");
-        (, uint256 currentBalance) = EnumerableMap.tryGet(deposits, msg.sender);
-        EnumerableMap.set(deposits, msg.sender, currentBalance + amount);
-        BalanceChange memory balanceChange = BalanceChange(true, msg.sender, amount);
+        (, uint256 currentBalance) = EnumerableMap.tryGet(deposits, withdrawalAddress);
+        EnumerableMap.set(deposits, withdrawalAddress, currentBalance + amount);
+        BalanceChange memory balanceChange = BalanceChange(true, withdrawalAddress, amount);
         verificationHash = getVerificationHashUpdate(verificationHash, balanceChange);
         depositedAmount = depositedAmount + amount;
         emit BalanceChangeEvent(balanceChange);

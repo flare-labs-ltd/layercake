@@ -56,7 +56,7 @@ contract UserController is LayerCakeTools {
         uint256 _amount
     ) external controllerOnly {
         _token.approve(address(_layerCakeOriginDeploy), _amount);
-        _layerCakeOriginDeploy.deposit(_amount);
+        _layerCakeOriginDeploy.deposit(_amount, address(this));
     }
 
     function withdrawFromLayerCakeOriginDeploy(LayerCakeOriginDeploy _layerCakeOriginDeploy, uint256 _amount)

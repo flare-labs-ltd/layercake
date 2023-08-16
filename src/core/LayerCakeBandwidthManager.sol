@@ -55,25 +55,48 @@ contract LayerCakeBandwidthManager {
     // ==================
 
     function proveBandwidth(address bandwidthProvider, uint256 amount) external layerCakeOnly {
-        _proveBandwidthPrivate(bandwidthProvider, amount, true);
+        _proveBandwidth(bandwidthProvider, amount, 0);
     }
 
-    function _proveBandwidthPrivate(address bandwidthProvider, uint256 amount, bool addToUsedBandwidth) private {
-        // Prove that the bandwidth provider calling this function has free bandwidth >= amount
+    function _proveBandwidth(address bandwidthProvider, uint256 amount, uint256 setting) private {
         BandwidthProvider memory bp = bpInfo[bandwidthProvider];
-        require(!bp.negated && block.timestamp - bp.timeLastNegated > bandwidthPeriod, "PBP1");
-        if ((block.timestamp - bp.startTime) / bandwidthPeriod > (bp.timeLastActive - bp.startTime) / bandwidthPeriod) {
-            // New bandwidth period
-            if (amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth) {
-                require(block.timestamp - bp.timeLastActive > reorgAssumption, "PBP2");
-            }
-            bp.currentUsedBandwidth = 0;
-        }
-        require(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount, "PBP3");
-        bp.timeLastActive = block.timestamp;
+        require(!bp.negated && block.timestamp - bp.timeLastNegated > bandwidthPeriod, "PB1");
+        require(block.timestamp >= bp.timeLastActive, "PB2");
         bp.negationCounter = 0;
-        if (addToUsedBandwidth) {
+        if (setting != 1) {
+            if (
+                (block.timestamp - bp.startTime) / bandwidthPeriod
+                    > (bp.timeLastActive - bp.startTime) / bandwidthPeriod
+            ) {
+                // New bandwidth period
+                if (
+                    bp.currentUsedBandwidth > bp.currentTotalBandwidth
+                        || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth
+                ) {
+                    require(block.timestamp - bp.timeLastActive > reorgAssumption, "PB3");
+                }
+                bp.currentUsedBandwidth = 0;
+            }
+            // Prove that the bandwidth provider calling this function has free bandwidth >= amount
+            require(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount, "PB4");
+        } else {
+            if (bp.startTime == 0) {
+                // This is a new BP
+                bp.startTime = block.timestamp;
+            }
+            bp.currentTotalBandwidth = bp.currentTotalBandwidth + amount;
+            // Require that the added bandwidth is greater than or equal to the default negation cost
+            require(bp.currentTotalBandwidth >= minBandwidth, "PB5");
+            require(bp.currentTotalBandwidth <= minBandwidth * MAX_BANDWIDTH_MULTIPLE, "PB6");
+        }
+        if (setting <= 1) {
+            bp.timeLastActive = block.timestamp + setting * bandwidthPeriod;
             bp.currentUsedBandwidth = bp.currentUsedBandwidth + amount;
+        } else {
+            bp.currentTotalBandwidth = bp.currentTotalBandwidth - amount;
+            if (bp.currentTotalBandwidth > 0) {
+                require(bp.currentTotalBandwidth >= minBandwidth, "PB7");
+            }
         }
         bpInfo[bandwidthProvider] = bp;
     }
@@ -83,23 +106,10 @@ contract LayerCakeBandwidthManager {
         layerCakeOnly
         returns (uint256 depositedAmount)
     {
-        BandwidthProvider memory bp = bpInfo[bandwidthProvider];
-        require(!bp.negated, "AB1");
-        require(block.timestamp - bp.timeLastActive >= bandwidthPeriod, "AB2");
         // Require that the added bandwidth is divisible by bandwidthDepositDenominator without a remainder
-        require(bandwidthAmount % bandwidthDepositDenominator == 0, "AB3");
-        bp.timeLastActive = block.timestamp;
-        if (bp.startTime == 0) {
-            // This is a new BP
-            bp.startTime = bp.timeLastActive;
-        }
+        require(bandwidthAmount % bandwidthDepositDenominator == 0, "AB1");
         depositedAmount = bandwidthAmount + (bandwidthAmount / bandwidthDepositDenominator);
-        bp.currentTotalBandwidth = bp.currentTotalBandwidth + bandwidthAmount;
-        // Require that the added bandwidth is greater than or equal to the default negation cost
-        require(bp.currentTotalBandwidth >= minBandwidth, "AB4");
-        require(bp.currentTotalBandwidth <= minBandwidth * MAX_BANDWIDTH_MULTIPLE, "AB5");
-        bp.negationCounter = 0;
-        bpInfo[bandwidthProvider] = bp;
+        _proveBandwidth(bandwidthProvider, bandwidthAmount, 1);
     }
 
     function subtractBandwidth(address bandwidthProvider, uint256 bandwidthAmount)
@@ -107,17 +117,10 @@ contract LayerCakeBandwidthManager {
         layerCakeOnly
         returns (uint256 withdrawnAmount)
     {
-        _proveBandwidthPrivate(bandwidthProvider, bandwidthAmount, false);
-        BandwidthProvider memory bp = bpInfo[bandwidthProvider];
-        require(bandwidthAmount <= bp.currentTotalBandwidth, "SB1");
         // Require that the subtracted bandwidth is divisible by bandwidthDepositDenominator without a remainder
-        require(bandwidthAmount % bandwidthDepositDenominator == 0, "SB2");
+        require(bandwidthAmount % bandwidthDepositDenominator == 0, "SB1");
         withdrawnAmount = bandwidthAmount + (bandwidthAmount / bandwidthDepositDenominator);
-        bp.currentTotalBandwidth = bp.currentTotalBandwidth - bandwidthAmount;
-        if (bp.currentTotalBandwidth > 0) {
-            require(bp.currentTotalBandwidth >= minBandwidth, "AB3");
-        }
-        bpInfo[bandwidthProvider] = bp;
+        _proveBandwidth(bandwidthProvider, bandwidthAmount, 2);
     }
 
     function negateBp(
