@@ -5,11 +5,13 @@
 pragma solidity 0.8.19;
 
 import "../../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
-import "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableMap.sol";
 import "./LayerCakeDeployTools.sol";
 
 contract LayerCakeOriginDeploy is LayerCakeDeployTools, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     address public immutable layerCakeAddress;
     uint256 public immutable deployTime;
     IERC20 public immutable originToken;
@@ -41,7 +43,7 @@ contract LayerCakeOriginDeploy is LayerCakeDeployTools, ReentrancyGuard {
         verificationHash = getVerificationHashUpdate(verificationHash, balanceChange);
         depositedAmount = depositedAmount + amount;
         emit BalanceChangeEvent(balanceChange);
-        require(originToken.transferFrom(msg.sender, address(this), amount), "D2");
+        originToken.safeTransferFrom(msg.sender, address(this), amount);
         require(originToken.balanceOf(address(this)) <= depositCap, "D3");
     }
 
@@ -53,13 +55,13 @@ contract LayerCakeOriginDeploy is LayerCakeDeployTools, ReentrancyGuard {
         verificationHash = getVerificationHashUpdate(verificationHash, balanceChange);
         depositedAmount = depositedAmount - amount;
         emit BalanceChangeEvent(balanceChange);
-        require(originToken.transfer(msg.sender, amount), "W2");
+        originToken.safeTransfer(msg.sender, amount);
     }
 
     function transferDepositsToLayerCake() external preDeployOnly nonReentrant {
         require(block.timestamp >= deployTime, "DLC1");
         require(verificationHash != bytes32(0), "DLC2");
         deployed = true;
-        require(originToken.transfer(layerCakeAddress, originToken.balanceOf(address(this))), "DLC3");
+        originToken.safeTransfer(layerCakeAddress, originToken.balanceOf(address(this)));
     }
 }

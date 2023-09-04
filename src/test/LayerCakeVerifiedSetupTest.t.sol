@@ -12,9 +12,6 @@ pragma solidity 0.8.19;
 
 import "../../lib/forge-std/src/Test.sol";
 
-// LayerCake contracts
-import "../core/LayerCakeBandwidthManager.sol";
-
 // Testing contracts
 import "./UserController.sol";
 import "./BandwidthProviderController.sol";
@@ -35,42 +32,68 @@ contract LayerCakeVerifiedSetupTest is Test, LayerCakeTools {
         // deployed
         assertTrue(c.destinationDeploy().deployed());
 
+        (
+            bool originIsDestinationChain,
+            ,
+            ,
+            ,
+            ,
+            ,
+            uint256 originDepositCap,
+            ,
+            ,
+            uint256 originReorgAssumption,
+            uint256 originBandwidthDepositDenominator,
+            uint256 originMinBandwidth
+        ) = c.originLayercake().params();
+
+        (
+            bool destinationIsDestinationChain,
+            ,
+            ,
+            ,
+            ,
+            ,
+            uint256 destinationDepositCap,
+            ,
+            ,
+            uint256 destinationReorgAssumption,
+            uint256 destinationBandwidthDepositDenominator,
+            uint256 destinationMinBandwidth
+        ) = c.destinationLayercake().params();
+
         // isDestinationChain
-        assertEq(c.originLayercake().isDestinationChain(), false);
-        assertEq(c.destinationLayercake().isDestinationChain(), true);
+        assertEq(originIsDestinationChain, false);
+        assertEq(destinationIsDestinationChain, true);
 
         // pathwayId
         assertEq(c.originLayercake().departingPathwayId(), c.destinationLayercake().arrivingPathwayId());
         assertEq(c.originLayercake().arrivingPathwayId(), c.destinationLayercake().departingPathwayId());
 
         // depositCap
-        assertEq(c.originLayercake().depositCap(), c.depositCap());
-        assertEq(c.destinationLayercake().depositCap(), c.depositCap());
+        assertEq(originDepositCap, c.depositCap());
+        assertEq(destinationDepositCap, c.depositCap());
 
         // address(token)
         assertEq(address(c.originLayercake().token()), address(c.originToken()));
         assertEq(address(c.destinationLayercake().token()), address(c.destinationToken()));
 
         // bpInfo
-        LayerCakeBandwidthManager originBandwidthManager = c.originLayercake().bandwidthManager();
         uint256 origincurrentTotalBandwidth;
-        (,,,,,, origincurrentTotalBandwidth,) = originBandwidthManager.bpInfo(vm.addr(1000));
+        (,,,,,, origincurrentTotalBandwidth,) = c.originLayercake().bpInfo(vm.addr(1000));
         assertEq(origincurrentTotalBandwidth, 100000);
-        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
         uint256 destinationcurrentTotalBandwidth;
-        (,,,,,, destinationcurrentTotalBandwidth,) = destinationBandwidthManager.bpInfo(vm.addr(2000));
+        (,,,,,, destinationcurrentTotalBandwidth,) = c.destinationLayercake().bpInfo(vm.addr(2000));
         assertEq(destinationcurrentTotalBandwidth, 100000);
 
         // bandwidthManager constants
-        assertEq(originBandwidthManager.layerCakeContract(), address(c.originLayercake()));
-        assertEq(originBandwidthManager.reorgAssumption(), c.reorgAssumption());
-        assertEq(originBandwidthManager.bandwidthDepositDenominator(), c.bandwidthDepositDenominator());
-        assertEq(originBandwidthManager.minBandwidth(), c.minBandwidth());
+        assertEq(originReorgAssumption, c.reorgAssumption());
+        assertEq(originBandwidthDepositDenominator, c.bandwidthDepositDenominator());
+        assertEq(originMinBandwidth, c.minBandwidth());
 
-        assertEq(destinationBandwidthManager.layerCakeContract(), address(c.destinationLayercake()));
-        assertEq(destinationBandwidthManager.reorgAssumption(), c.reorgAssumption());
-        assertEq(destinationBandwidthManager.bandwidthDepositDenominator(), c.bandwidthDepositDenominator());
-        assertEq(destinationBandwidthManager.minBandwidth(), c.minBandwidth());
+        assertEq(destinationReorgAssumption, c.reorgAssumption());
+        assertEq(destinationBandwidthDepositDenominator, c.bandwidthDepositDenominator());
+        assertEq(destinationMinBandwidth, c.minBandwidth());
 
         // Deposits
         uint256 originDepositedAmount = 86000000;

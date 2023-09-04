@@ -10,9 +10,8 @@ import "../../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
 // LayerCake contracts
 import "../../src/core/LayerCakeOriginDeploy.sol";
-import "../../src/core/LayerCakeTools.sol";
 
-contract TransferDeposits is Test, Script, LayerCakeTools {
+contract TransferDeposits is Test, Script {
     // Deployment contracts
     LayerCakeOriginDeploy public originDeploy;
 

@@ -1,1259 +1,1526 @@
 Summary
- - [incorrect-equality](#incorrect-equality) (5 results) (Medium)
- - [timestamp](#timestamp) (12 results) (Low)
- - [solc-version](#solc-version) (22 results) (Informational)
- - [unused-return](#unused-return) (12 results) (Medium)
- - [assembly](#assembly) (16 results) (Informational)
- - [dead-code](#dead-code) (110 results) (Informational)
- - [low-level-calls](#low-level-calls) (2 results) (Informational)
- - [weak-prng](#weak-prng) (2 results) (High)
- - [reentrancy-events](#reentrancy-events) (7 results) (Low)
+ - [incorrect-equality](#incorrect-equality) (8 results) (Medium)
+ - [unused-return](#unused-return) (7 results) (Medium)
+ - [assembly](#assembly) (17 results) (Informational)
+ - [dead-code](#dead-code) (152 results) (Informational)
+ - [solc-version](#solc-version) (12 results) (Informational)
+ - [low-level-calls](#low-level-calls) (15 results) (Informational)
+ - [naming-convention](#naming-convention) (3 results) (Informational)
+ - [timestamp](#timestamp) (7 results) (Low)
+ - [reentrancy-benign](#reentrancy-benign) (3 results) (Low)
+ - [reentrancy-events](#reentrancy-events) (6 results) (Low)
 ## incorrect-equality
 Impact: Medium
 Confidence: High
  - [ ] ID-0
-[LayerCakeBandwidthManager._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L61-L102) uses a dangerous strict equality:
-	- [bp.startTime == 0](src/core/flattened/LayerCakeBandwidthManager.f.sol#L83)
+[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580) uses a dangerous strict equality:
+	- [require(bool)(destinationToken.balanceOf(address(this)) == depositedAmount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1566)
 
-src/core/flattened/LayerCakeBandwidthManager.f.sol#L61-L102
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580
 
 
  - [ ] ID-1
-[LayerCakeDestinationDeploy.constructor(address,address,bytes32,uint256,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1696-L1708) uses a dangerous strict equality:
-	- [require(bool)(destinationToken.balanceOf(cLayerCakeAddress) == cDepositCap - cDepositedAmount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1706)
+[LayerCakeDestinationDeploy.constructor(address,address,bytes32,uint256,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1536-L1548) uses a dangerous strict equality:
+	- [require(bool)(destinationToken.balanceOf(cLayerCakeAddress) == cDepositCap - cDepositedAmount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1546)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1696-L1708
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1536-L1548
 
 
  - [ ] ID-2
-[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740) uses a dangerous strict equality:
-	- [require(bool)(destinationToken.balanceOf(address(this)) == depositedAmount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1726)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L882-L913) uses a dangerous strict equality:
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple,NB3)](src/core/flattened/LayerCake.f.sol#L898)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740
+src/core/flattened/LayerCake.f.sol#L882-L913
 
 
  - [ ] ID-3
-[LayerCake.executeStandardOperations(LayerCakeExecutionProof.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L792-L813) uses a dangerous strict equality:
-	- [require(bool,string)(token.balanceOf(address(calldataInterface)) == currentBalance,ESO6)](src/core/flattened/LayerCake.f.sol#L811)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L882-L913) uses a dangerous strict equality:
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCake.f.sol#L904)
 
-src/core/flattened/LayerCake.f.sol#L792-L813
+src/core/flattened/LayerCake.f.sol#L882-L913
 
 
  - [ ] ID-4
-[LayerCakeBandwidthManager._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L233-L274) uses a dangerous strict equality:
-	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L255)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L882-L913) uses a dangerous strict equality:
+	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCake.f.sol#L908)
 
-src/core/flattened/LayerCake.f.sol#L233-L274
+src/core/flattened/LayerCake.f.sol#L882-L913
 
 
-## timestamp
-Impact: Low
-Confidence: Medium
  - [ ] ID-5
-[LayerCakeBandwidthManager._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L61-L102) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(! bp.negated && block.timestamp - bp.timeLastNegated > bandwidthPeriod,PB1)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L63)
-	- [require(bool,string)(block.timestamp >= bp.timeLastActive,PB2)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L64)
-	- [(block.timestamp - bp.startTime) / bandwidthPeriod > (bp.timeLastActive - bp.startTime) / bandwidthPeriod](src/core/flattened/LayerCakeBandwidthManager.f.sol#L68-L69)
-	- [bp.currentUsedBandwidth > bp.currentTotalBandwidth || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth](src/core/flattened/LayerCakeBandwidthManager.f.sol#L73-L74)
-	- [require(bool,string)(block.timestamp - bp.timeLastActive > reorgAssumption,PB3)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L76)
-	- [require(bool,string)(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount,PB4)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L81)
-	- [bp.startTime == 0](src/core/flattened/LayerCakeBandwidthManager.f.sol#L83)
-	- [require(bool,string)(bp.currentTotalBandwidth >= minBandwidth,PB5)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L89)
-	- [require(bool,string)(bp.currentTotalBandwidth <= minBandwidth * MAX_BANDWIDTH_MULTIPLE,PB6)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L90)
-	- [bp.currentTotalBandwidth > 0](src/core/flattened/LayerCakeBandwidthManager.f.sol#L97)
-	- [require(bool,string)(bp.currentTotalBandwidth >= minBandwidth,PB7)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L98)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L882-L913) uses a dangerous strict equality:
+	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB1)](src/core/flattened/LayerCake.f.sol#L891)
 
-src/core/flattened/LayerCakeBandwidthManager.f.sol#L61-L102
+src/core/flattened/LayerCake.f.sol#L882-L913
 
 
  - [ ] ID-6
-[LayerCakeBandwidthManager.negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L126-L157) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB1)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L135)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L139)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / MAX_BANDWIDTH_MULTIPLE,NB3)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L142)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L148)
-	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCakeBandwidthManager.f.sol#L152)
+[LayerCake._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L839-L880) uses a dangerous strict equality:
+	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L861)
 
-src/core/flattened/LayerCakeBandwidthManager.f.sol#L126-L157
+src/core/flattened/LayerCake.f.sol#L839-L880
 
 
  - [ ] ID-7
-[LayerCakeOriginDeploy.transferDepositsToLayerCake()](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1143-L1148) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(block.timestamp >= deployTime,DLC1)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1144)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L882-L913) uses a dangerous strict equality:
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCake.f.sol#L895)
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1143-L1148
+src/core/flattened/LayerCake.f.sol#L882-L913
 
-
- - [ ] ID-8
-[LayerCakeBandwidthManager._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L233-L274) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(! bp.negated && block.timestamp - bp.timeLastNegated > bandwidthPeriod,PB1)](src/core/flattened/LayerCake.f.sol#L235)
-	- [require(bool,string)(block.timestamp >= bp.timeLastActive,PB2)](src/core/flattened/LayerCake.f.sol#L236)
-	- [(block.timestamp - bp.startTime) / bandwidthPeriod > (bp.timeLastActive - bp.startTime) / bandwidthPeriod](src/core/flattened/LayerCake.f.sol#L240-L241)
-	- [bp.currentUsedBandwidth > bp.currentTotalBandwidth || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth](src/core/flattened/LayerCake.f.sol#L245-L246)
-	- [require(bool,string)(block.timestamp - bp.timeLastActive > reorgAssumption,PB3)](src/core/flattened/LayerCake.f.sol#L248)
-	- [require(bool,string)(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount,PB4)](src/core/flattened/LayerCake.f.sol#L253)
-	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L255)
-	- [require(bool,string)(bp.currentTotalBandwidth >= minBandwidth,PB5)](src/core/flattened/LayerCake.f.sol#L261)
-	- [require(bool,string)(bp.currentTotalBandwidth <= minBandwidth * MAX_BANDWIDTH_MULTIPLE,PB6)](src/core/flattened/LayerCake.f.sol#L262)
-	- [bp.currentTotalBandwidth > 0](src/core/flattened/LayerCake.f.sol#L269)
-	- [require(bool,string)(bp.currentTotalBandwidth >= minBandwidth,PB7)](src/core/flattened/LayerCake.f.sol#L270)
-
-src/core/flattened/LayerCake.f.sol#L233-L274
-
-
- - [ ] ID-9
-[LayerCakeStorageManager._checkCreateStorageSlot(uint256)](src/core/flattened/LayerCake.f.sol#L469-L492) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(timestamp >= LayerCakeStorageSlot(slots[thisStorageSlot]).storageStartTime() && timestamp < LayerCakeStorageSlot(slots[thisStorageSlot]).storageEndTime(),CCSS2)](src/core/flattened/LayerCake.f.sol#L486-L490)
-
-src/core/flattened/LayerCake.f.sol#L469-L492
-
-
- - [ ] ID-10
-[LayerCakeBandwidthManager.negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L298-L329) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB1)](src/core/flattened/LayerCake.f.sol#L307)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCake.f.sol#L311)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / MAX_BANDWIDTH_MULTIPLE,NB3)](src/core/flattened/LayerCake.f.sol#L314)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCake.f.sol#L320)
-	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCake.f.sol#L324)
-
-src/core/flattened/LayerCake.f.sol#L298-L329
-
-
- - [ ] ID-11
-[LayerCake._executeOperations(LayerCakeExecutionProof.ExecutionProof,bool)](src/core/flattened/LayerCake.f.sol#L889-L902) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(block.timestamp >= executionProof.operations.executionTime,EO2)](src/core/flattened/LayerCake.f.sol#L891)
-
-src/core/flattened/LayerCake.f.sol#L889-L902
-
-
- - [ ] ID-12
-[LayerCake._storeOperations(LayerCakeExecutionProof.Operations)](src/core/flattened/LayerCake.f.sol#L873-L887) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(operations.recipient != address(0),SO1)](src/core/flattened/LayerCake.f.sol#L874)
-	- [require(bool,string)(operations.sender == msg.sender,SO2)](src/core/flattened/LayerCake.f.sol#L875)
-	- [require(bool,string)(operations.amount >= 2 * operations.fee,SO3)](src/core/flattened/LayerCake.f.sol#L877)
-	- [require(bool,string)(operations.amount >= operations.fee,SO4)](src/core/flattened/LayerCake.f.sol#L879)
-	- [require(bool,string)(! storageManager.getExecutionIdStored(operations.executionTime,executionId),SO6)](src/core/flattened/LayerCake.f.sol#L884)
-
-src/core/flattened/LayerCake.f.sol#L873-L887
-
-
- - [ ] ID-13
-[LayerCakeStorageManager._getStorageSlot(uint256)](src/core/flattened/LayerCake.f.sol#L454-L467) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(latestStorageEpoch - thisStorageEpoch < STORAGE_SLOTS,GSS1)](src/core/flattened/LayerCake.f.sol#L462)
-	- [thisStorageEpoch > storageEpoch](src/core/flattened/LayerCake.f.sol#L464)
-
-src/core/flattened/LayerCake.f.sol#L454-L467
-
-
- - [ ] ID-14
-[LayerCake.increaseFee(bytes32,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L779-L786) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(block.timestamp >= executionTime,IF1)](src/core/flattened/LayerCake.f.sol#L780)
-
-src/core/flattened/LayerCake.f.sol#L779-L786
-
-
- - [ ] ID-15
-[LayerCakeStorageManager._getStorageSlot(uint256)](src/core/flattened/LayerCakeStorageManager.f.sol#L155-L168) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(latestStorageEpoch - thisStorageEpoch < STORAGE_SLOTS,GSS1)](src/core/flattened/LayerCakeStorageManager.f.sol#L163)
-	- [thisStorageEpoch > storageEpoch](src/core/flattened/LayerCakeStorageManager.f.sol#L165)
-
-src/core/flattened/LayerCakeStorageManager.f.sol#L155-L168
-
-
- - [ ] ID-16
-[LayerCakeStorageManager._checkCreateStorageSlot(uint256)](src/core/flattened/LayerCakeStorageManager.f.sol#L170-L193) uses timestamp for comparisons
-	Dangerous comparisons:
-	- [require(bool,string)(timestamp >= LayerCakeStorageSlot(slots[thisStorageSlot]).storageStartTime() && timestamp < LayerCakeStorageSlot(slots[thisStorageSlot]).storageEndTime(),CCSS2)](src/core/flattened/LayerCakeStorageManager.f.sol#L187-L191)
-
-src/core/flattened/LayerCakeStorageManager.f.sol#L170-L193
-
-
-## solc-version
-Impact: Informational
-Confidence: High
- - [ ] ID-17
-Pragma version[0.8.19](src/core/flattened/LayerCakeBandwidthManager.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeBandwidthManager.f.sol#L5
-
-
- - [ ] ID-18
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-19
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-20
-Pragma version[0.8.19](src/core/flattened/LayerCakeStorageSlot.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeStorageSlot.f.sol#L5
-
-
- - [ ] ID-21
-Pragma version[0.8.19](src/core/flattened/LayerCakeExecutionProof.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeExecutionProof.f.sol#L5
-
-
- - [ ] ID-22
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-23
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-24
-Pragma version[0.8.19](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L5
-
-
- - [ ] ID-25
-Pragma version[0.8.19](src/core/flattened/LayerCakeOriginDeploy.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L5
-
-
- - [ ] ID-26
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-27
-Pragma version[0.8.19](src/core/flattened/LayerCakeTransportedToken.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeTransportedToken.f.sol#L5
-
-
- - [ ] ID-28
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-29
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-30
-Pragma version[0.8.19](src/core/flattened/LayerCakeDeployTools.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeDeployTools.f.sol#L5
-
-
- - [ ] ID-31
-Pragma version[0.8.19](src/core/flattened/LayerCakeCalldataInterface.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeCalldataInterface.f.sol#L5
-
-
- - [ ] ID-32
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-33
-Pragma version[0.8.19](src/core/flattened/LayerCake.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCake.f.sol#L5
-
-
- - [ ] ID-34
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-35
-solc-0.8.19 is not recommended for deployment
-
- - [ ] ID-36
-Pragma version[0.8.19](src/core/flattened/LayerCakeStorageManager.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeStorageManager.f.sol#L5
-
-
- - [ ] ID-37
-Pragma version[0.8.19](src/core/flattened/LayerCakeTools.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
-
-src/core/flattened/LayerCakeTools.f.sol#L5
-
-
- - [ ] ID-38
-solc-0.8.19 is not recommended for deployment
 
 ## unused-return
 Impact: Medium
 Confidence: Medium
- - [ ] ID-39
-[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740) ignores return value by [EnumerableMap.set(deposits,balanceChange.sender,currentBalance + balanceChange.amount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1729)
+ - [ ] ID-8
+[LayerCakeDestinationDeploy.withdraw()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1582-L1587) ignores return value by [EnumerableMap.remove(deposits,msg.sender)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1585)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740
-
-
- - [ ] ID-40
-[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740) ignores return value by [(currentBalance) = EnumerableMap.tryGet(deposits,balanceChange.sender)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1728)
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1582-L1587
 
 
- - [ ] ID-41
-[LayerCakeDestinationDeploy.withdraw()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1742-L1747) ignores return value by [EnumerableMap.remove(deposits,msg.sender)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1745)
+ - [ ] ID-9
+[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580) ignores return value by [EnumerableMap.set(deposits,balanceChange.sender,currentBalance + balanceChange.amount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1569)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1742-L1747
-
-
- - [ ] ID-42
-[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740) ignores return value by [EnumerableMap.set(deposits,balanceChange.sender,currentBalance_scope_0 - balanceChange.amount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1732)
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1725-L1740
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580
 
 
- - [ ] ID-43
-[LayerCakeOriginDeploy.deposit(uint256,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1120-L1130) ignores return value by [EnumerableMap.set(deposits,withdrawalAddress,currentBalance + amount)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1123)
+ - [ ] ID-10
+[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580) ignores return value by [EnumerableMap.set(deposits,balanceChange.sender,currentBalance_scope_0 - balanceChange.amount)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1572)
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1120-L1130
-
-
- - [ ] ID-44
-[LayerCakeOriginDeploy.deposit(uint256,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1120-L1130) ignores return value by [(currentBalance) = EnumerableMap.tryGet(deposits,withdrawalAddress)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1122)
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1120-L1130
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580
 
 
- - [ ] ID-45
-[LayerCakeOriginDeploy.withdraw(uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1132-L1141) ignores return value by [EnumerableMap.set(deposits,msg.sender,currentBalance - amount)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1135)
+ - [ ] ID-11
+[LayerCakeDestinationDeploy.setBalanceChange(LayerCakeDeployTools.BalanceChange)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580) ignores return value by [(currentBalance) = EnumerableMap.tryGet(deposits,balanceChange.sender)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1568)
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1132-L1141
-
-
- - [ ] ID-46
-[LayerCake.cancelStandardOperations(LayerCakeExecutionProof.Operations)](src/core/flattened/LayerCake.f.sol#L732-L746) ignores return value by [(executionPrepared) = storageManager.getExecutionIdPrepared(operations.executionTime,executionId)](src/core/flattened/LayerCake.f.sol#L736)
-
-src/core/flattened/LayerCake.f.sol#L732-L746
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1565-L1580
 
 
- - [ ] ID-47
-[LayerCakeStorageManager.prepareExecutionId(bytes32,LayerCakeExecutionProof.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L526-L533) ignores return value by [LayerCakeStorageSlot(slots[_checkCreateStorageSlot(executionProof.operations.executionTime)]).prepareExecutionId(executionId,executionProof)](src/core/flattened/LayerCake.f.sol#L531-L532)
+ - [ ] ID-12
+[LayerCakeOriginDeploy.deposit(uint256,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1549-L1559) ignores return value by [EnumerableMap.set(deposits,withdrawalAddress,currentBalance + amount)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1552)
 
-src/core/flattened/LayerCake.f.sol#L526-L533
-
-
- - [ ] ID-48
-[LayerCakeStorageManager.getExecutionIdPrepared(uint256,bytes32)](src/core/flattened/LayerCake.f.sol#L508-L516) ignores return value by [LayerCakeStorageSlot(slots[storageSlot]).getExecutionIdPrepared(executionId)](src/core/flattened/LayerCake.f.sol#L515)
-
-src/core/flattened/LayerCake.f.sol#L508-L516
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1549-L1559
 
 
- - [ ] ID-49
-[LayerCakeStorageManager.getExecutionIdPrepared(uint256,bytes32)](src/core/flattened/LayerCakeStorageManager.f.sol#L209-L217) ignores return value by [LayerCakeStorageSlot(slots[storageSlot]).getExecutionIdPrepared(executionId)](src/core/flattened/LayerCakeStorageManager.f.sol#L216)
+ - [ ] ID-13
+[LayerCakeOriginDeploy.withdraw(uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1561-L1570) ignores return value by [EnumerableMap.set(deposits,msg.sender,currentBalance - amount)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1564)
 
-src/core/flattened/LayerCakeStorageManager.f.sol#L209-L217
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1561-L1570
 
 
- - [ ] ID-50
-[LayerCakeStorageManager.prepareExecutionId(bytes32,LayerCakeExecutionProof.ExecutionProof)](src/core/flattened/LayerCakeStorageManager.f.sol#L227-L234) ignores return value by [LayerCakeStorageSlot(slots[_checkCreateStorageSlot(executionProof.operations.executionTime)]).prepareExecutionId(executionId,executionProof)](src/core/flattened/LayerCakeStorageManager.f.sol#L232-L233)
+ - [ ] ID-14
+[LayerCakeOriginDeploy.deposit(uint256,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1549-L1559) ignores return value by [(currentBalance) = EnumerableMap.tryGet(deposits,withdrawalAddress)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1551)
 
-src/core/flattened/LayerCakeStorageManager.f.sol#L227-L234
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1549-L1559
 
 
 ## assembly
 Impact: Informational
 Confidence: High
- - [ ] ID-51
-[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L985-L995) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L990-L992)
+ - [ ] ID-15
+[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L885-L895) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L890-L892)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L985-L995
-
-
- - [ ] ID-52
-[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L891-L901) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L896-L898)
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L891-L901
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L885-L895
 
 
- - [ ] ID-53
-[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L307-L317) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L312-L314)
+ - [ ] ID-16
+[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1489-L1499) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1494-L1496)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L307-L317
-
-
- - [ ] ID-54
-[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L381-L391) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L386-L388)
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L381-L391
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1489-L1499
 
 
- - [ ] ID-55
-[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L703-L713) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L708-L710)
+ - [ ] ID-17
+[Address._revert(bytes,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L363-L376) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L368-L371)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L703-L713
-
-
- - [ ] ID-56
-[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L455-L465) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L460-L462)
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L455-L465
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L363-L376
 
 
- - [ ] ID-57
-[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L797-L807) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L802-L804)
+ - [ ] ID-18
+[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1301-L1311) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1306-L1308)
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L797-L807
-
-
- - [ ] ID-58
-[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1062-L1072) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1067-L1069)
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1062-L1072
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1301-L1311
 
 
- - [ ] ID-59
-[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L384-L394) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L389-L391)
+ - [ ] ID-19
+[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1207-L1217) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1212-L1214)
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L384-L394
-
-
- - [ ] ID-60
-[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L458-L468) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L463-L465)
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L458-L468
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1207-L1217
 
 
- - [ ] ID-61
-[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L968-L978) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L973-L975)
+ - [ ] ID-20
+[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1395-L1405) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1400-L1402)
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L968-L978
-
-
- - [ ] ID-62
-[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L874-L884) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L879-L881)
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L874-L884
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1395-L1405
 
 
- - [ ] ID-63
-[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L780-L790) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L785-L787)
+ - [ ] ID-21
+[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L811-L821) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L816-L818)
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L780-L790
-
-
- - [ ] ID-64
-[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L532-L542) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L537-L539)
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L532-L542
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L811-L821
 
 
- - [ ] ID-65
-[LayerCakeCalldataInterface.execute(address,bytes)](src/core/flattened/LayerCakeCalldataInterface.f.sol#L90-L100) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCakeCalldataInterface.f.sol#L95-L97)
+ - [ ] ID-22
+[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L959-L969) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L964-L966)
 
-src/core/flattened/LayerCakeCalldataInterface.f.sol#L90-L100
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L959-L969
 
 
- - [ ] ID-66
-[LayerCakeCalldataInterface.execute(address,bytes)](src/core/flattened/LayerCake.f.sol#L626-L636) uses assembly
-	- [INLINE ASM](src/core/flattened/LayerCake.f.sol#L631-L633)
+ - [ ] ID-23
+[Address._revert(bytes,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L445-L458) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L450-L453)
 
-src/core/flattened/LayerCake.f.sol#L626-L636
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L445-L458
+
+
+ - [ ] ID-24
+[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L959-L969) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L964-L966)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L959-L969
+
+
+ - [ ] ID-25
+[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1489-L1499) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1494-L1496)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1489-L1499
+
+
+ - [ ] ID-26
+[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1301-L1311) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1306-L1308)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1301-L1311
+
+
+ - [ ] ID-27
+[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1207-L1217) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1212-L1214)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1207-L1217
+
+
+ - [ ] ID-28
+[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L885-L895) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L890-L892)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L885-L895
+
+
+ - [ ] ID-29
+[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L811-L821) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L816-L818)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L811-L821
+
+
+ - [ ] ID-30
+[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1395-L1405) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1400-L1402)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1395-L1405
+
+
+ - [ ] ID-31
+[Address._revert(bytes,function())](src/core/flattened/LayerCake.f.sol#L363-L376) uses assembly
+	- [INLINE ASM](src/core/flattened/LayerCake.f.sol#L368-L371)
+
+src/core/flattened/LayerCake.f.sol#L363-L376
 
 
 ## dead-code
 Impact: Informational
 Confidence: Medium
- - [ ] ID-67
-[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L307-L317) is never used and should be removed
+ - [ ] ID-32
+[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L811-L821) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L307-L317
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L811-L821
 
 
- - [ ] ID-68
-[EnumerableMap.at(EnumerableMap.Bytes32ToBytes32Map,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L576-L579) is never used and should be removed
+ - [ ] ID-33
+[EnumerableMap.at(EnumerableMap.Bytes32ToBytes32Map,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1080-L1083) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L576-L579
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1080-L1083
 
 
- - [ ] ID-69
-[EnumerableMap.length(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L751-L753) is never used and should be removed
+ - [ ] ID-34
+[EnumerableMap.length(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1255-L1257) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L751-L753
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1255-L1257
 
 
- - [ ] ID-70
-[EnumerableMap.keys(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L617-L619) is never used and should be removed
+ - [ ] ID-35
+[EnumerableMap.keys(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1121-L1123) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L617-L619
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1121-L1123
 
 
- - [ ] ID-71
-[EnumerableSet.length(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L281-L283) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L281-L283
-
-
- - [ ] ID-72
-[EnumerableSet.at(EnumerableSet.Bytes32Set,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L295-L297) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L295-L297
-
-
- - [ ] ID-73
-[EnumerableMap.get(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L691-L693) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L691-L693
-
-
- - [ ] ID-74
-[EnumerableMap.set(EnumerableMap.Bytes32ToUintMap,bytes32,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L916-L918) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L916-L918
-
-
- - [ ] ID-75
-[EnumerableSet._length(EnumerableSet.Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L215-L217) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L215-L217
-
-
- - [ ] ID-76
-[EnumerableSet._at(EnumerableSet.Set,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L229-L231) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L229-L231
-
-
- - [ ] ID-77
-[EnumerableSet.remove(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L415-L417) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L415-L417
-
-
- - [ ] ID-78
-[EnumerableMap.remove(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L925-L927) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L925-L927
-
-
- - [ ] ID-79
-[EnumerableMap.contains(EnumerableMap.AddressToUintMap,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L838-L840) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L838-L840
-
-
- - [ ] ID-80
-[EnumerableMap.tryGet(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L679-L682) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L679-L682
-
-
- - [ ] ID-81
-[EnumerableMap.tryGet(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L773-L776) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L773-L776
-
-
- - [ ] ID-82
-[EnumerableMap.length(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L845-L847) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L845-L847
-
-
- - [ ] ID-83
-[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L703-L713) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L703-L713
-
-
- - [ ] ID-84
-[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L891-L901) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L891-L901
-
-
- - [ ] ID-85
-[EnumerableMap.set(EnumerableMap.UintToUintMap,uint256,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L634-L636) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L634-L636
-
-
- - [ ] ID-86
-[EnumerableMap.tryGet(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L961-L964) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L961-L964
-
-
- - [ ] ID-87
-[EnumerableSet.contains(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L422-L424) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L422-L424
-
-
- - [ ] ID-88
-[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L381-L391) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L381-L391
-
-
- - [ ] ID-89
-[EnumerableSet.remove(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L341-L343) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L341-L343
-
-
- - [ ] ID-90
-[ERC20._burn(address,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1592-L1597) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1592-L1597
-
-
- - [ ] ID-91
-[EnumerableMap.contains(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L650-L652) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L650-L652
-
-
- - [ ] ID-92
-[EnumerableMap.contains(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L932-L934) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L932-L934
-
-
- - [ ] ID-93
-[EnumerableSet.at(EnumerableSet.AddressSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L369-L371) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L369-L371
-
-
- - [ ] ID-94
-[EnumerableSet.contains(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L348-L350) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L348-L350
-
-
- - [ ] ID-95
-[EnumerableMap.at(EnumerableMap.Bytes32ToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L952-L955) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L952-L955
-
-
- - [ ] ID-96
-[EnumerableSet.length(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L355-L357) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L355-L357
-
-
- - [ ] ID-97
-[EnumerableSet._values(EnumerableSet.Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L241-L243) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L241-L243
-
-
- - [ ] ID-98
-[EnumerableMap.remove(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L737-L739) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L737-L739
-
-
- - [ ] ID-99
-[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L455-L465) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L455-L465
-
-
- - [ ] ID-100
-[Context._msgData()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1140-L1142) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1140-L1142
-
-
- - [ ] ID-101
-[EnumerableMap.contains(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L744-L746) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L744-L746
-
-
- - [ ] ID-102
-[EnumerableMap.length(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L562-L564) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L562-L564
-
-
- - [ ] ID-103
-[EnumerableMap.length(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L657-L659) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L657-L659
-
-
- - [ ] ID-104
-[EnumerableMap.at(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L670-L673) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L670-L673
-
-
- - [ ] ID-105
-[EnumerableSet.length(EnumerableSet.UintSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L429-L431) is never used and should be removed
-
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L429-L431
-
-
- - [ ] ID-106
-[EnumerableMap.get(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L785-L787) is never used and should be removed
+ - [ ] ID-36
+[EnumerableSet.length(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L785-L787) is never used and should be removed
 
 src/core/flattened/LayerCakeDestinationDeploy.f.sol#L785-L787
 
 
- - [ ] ID-107
-[EnumerableMap.set(EnumerableMap.UintToAddressMap,uint256,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L728-L730) is never used and should be removed
+ - [ ] ID-37
+[EnumerableSet.at(EnumerableSet.Bytes32Set,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L799-L801) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L728-L730
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L799-L801
+
+
+ - [ ] ID-38
+[Address.sendValue(address,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L181-L190) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L181-L190
+
+
+ - [ ] ID-39
+[EnumerableMap.get(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1195-L1197) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1195-L1197
+
+
+ - [ ] ID-40
+[EnumerableMap.set(EnumerableMap.Bytes32ToUintMap,bytes32,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1420-L1422) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1420-L1422
+
+
+ - [ ] ID-41
+[Address.functionCallWithValue(address,bytes,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L237-L239) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L237-L239
+
+
+ - [ ] ID-42
+[EnumerableSet._length(EnumerableSet.Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L719-L721) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L719-L721
+
+
+ - [ ] ID-43
+[Address.verifyCallResult(bool,bytes,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L344-L354) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L344-L354
+
+
+ - [ ] ID-44
+[EnumerableSet._at(EnumerableSet.Set,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L733-L735) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L733-L735
+
+
+ - [ ] ID-45
+[EnumerableSet.remove(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L919-L921) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L919-L921
+
+
+ - [ ] ID-46
+[EnumerableMap.remove(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1429-L1431) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1429-L1431
+
+
+ - [ ] ID-47
+[EnumerableMap.contains(EnumerableMap.AddressToUintMap,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1342-L1344) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1342-L1344
+
+
+ - [ ] ID-48
+[EnumerableMap.tryGet(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1183-L1186) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1183-L1186
+
+
+ - [ ] ID-49
+[EnumerableMap.tryGet(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1277-L1280) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1277-L1280
+
+
+ - [ ] ID-50
+[EnumerableMap.length(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1349-L1351) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1349-L1351
+
+
+ - [ ] ID-51
+[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1207-L1217) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1207-L1217
+
+
+ - [ ] ID-52
+[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1395-L1405) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1395-L1405
+
+
+ - [ ] ID-53
+[EnumerableMap.set(EnumerableMap.UintToUintMap,uint256,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1138-L1140) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1138-L1140
+
+
+ - [ ] ID-54
+[EnumerableMap.tryGet(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1465-L1468) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1465-L1468
+
+
+ - [ ] ID-55
+[Address.functionDelegateCall(address,bytes)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L287-L289) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L287-L289
+
+
+ - [ ] ID-56
+[SafeERC20.safeIncreaseAllowance(IERC20,address,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L421-L424) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L421-L424
+
+
+ - [ ] ID-57
+[EnumerableSet.contains(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L926-L928) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L926-L928
+
+
+ - [ ] ID-58
+[SafeERC20.safePermit(IERC20Permit,address,address,uint256,uint256,uint8,bytes32,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L458-L474) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L458-L474
+
+
+ - [ ] ID-59
+[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L885-L895) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L885-L895
+
+
+ - [ ] ID-60
+[EnumerableSet.remove(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L845-L847) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L845-L847
+
+
+ - [ ] ID-61
+[Address.functionDelegateCall(address,bytes,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L295-L302) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L295-L302
+
+
+ - [ ] ID-62
+[SafeERC20.safeTransferFrom(IERC20,address,address,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L413-L415) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L413-L415
+
+
+ - [ ] ID-63
+[Address.functionStaticCall(address,bytes,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L274-L281) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L274-L281
+
+
+ - [ ] ID-64
+[EnumerableMap.contains(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1154-L1156) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1154-L1156
+
+
+ - [ ] ID-65
+[EnumerableMap.contains(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1436-L1438) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1436-L1438
+
+
+ - [ ] ID-66
+[EnumerableSet.at(EnumerableSet.AddressSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L873-L875) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L873-L875
+
+
+ - [ ] ID-67
+[EnumerableSet.contains(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L852-L854) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L852-L854
+
+
+ - [ ] ID-68
+[EnumerableMap.at(EnumerableMap.Bytes32ToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1456-L1459) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1456-L1459
+
+
+ - [ ] ID-69
+[EnumerableSet.length(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L859-L861) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L859-L861
+
+
+ - [ ] ID-70
+[EnumerableSet._values(EnumerableSet.Set)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L745-L747) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L745-L747
+
+
+ - [ ] ID-71
+[Address.functionCall(address,bytes,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L220-L226) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L220-L226
+
+
+ - [ ] ID-72
+[EnumerableMap.remove(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1241-L1243) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1241-L1243
+
+
+ - [ ] ID-73
+[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L959-L969) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L959-L969
+
+
+ - [ ] ID-74
+[EnumerableMap.contains(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1248-L1250) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1248-L1250
+
+
+ - [ ] ID-75
+[Address.functionStaticCall(address,bytes)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L266-L268) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L266-L268
+
+
+ - [ ] ID-76
+[EnumerableMap.length(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1066-L1068) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1066-L1068
+
+
+ - [ ] ID-77
+[EnumerableMap.length(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1161-L1163) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1161-L1163
+
+
+ - [ ] ID-78
+[EnumerableMap.at(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1174-L1177) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1174-L1177
+
+
+ - [ ] ID-79
+[SafeERC20._callOptionalReturnBool(IERC20,bytes)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L501-L508) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L501-L508
+
+
+ - [ ] ID-80
+[Address.defaultRevert()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L359-L361) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L359-L361
+
+
+ - [ ] ID-81
+[SafeERC20.forceApprove(IERC20,address,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L445-L452) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L445-L452
+
+
+ - [ ] ID-82
+[EnumerableSet.length(EnumerableSet.UintSet)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L933-L935) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L933-L935
+
+
+ - [ ] ID-83
+[EnumerableMap.get(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1289-L1291) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1289-L1291
+
+
+ - [ ] ID-84
+[SafeERC20.safeDecreaseAllowance(IERC20,address,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L430-L438) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L430-L438
+
+
+ - [ ] ID-85
+[EnumerableMap.set(EnumerableMap.UintToAddressMap,uint256,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1232-L1234) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1232-L1234
+
+
+ - [ ] ID-86
+[EnumerableSet.at(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L947-L949) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L947-L949
+
+
+ - [ ] ID-87
+[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1301-L1311) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1301-L1311
+
+
+ - [ ] ID-88
+[EnumerableSet.add(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L835-L837) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L835-L837
+
+
+ - [ ] ID-89
+[EnumerableMap.at(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1268-L1271) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1268-L1271
+
+
+ - [ ] ID-90
+[Address.verifyCallResult(bool,bytes)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L332-L334) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L332-L334
+
+
+ - [ ] ID-91
+[EnumerableMap.length(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1443-L1445) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1443-L1445
+
+
+ - [ ] ID-92
+[EnumerableMap.remove(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1147-L1149) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1147-L1149
+
+
+ - [ ] ID-93
+[ReentrancyGuard._reentrancyGuardEntered()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L588-L590) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L588-L590
+
+
+ - [ ] ID-94
+[EnumerableMap.get(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1477-L1479) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1477-L1479
+
+
+ - [ ] ID-95
+[EnumerableSet.add(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L909-L911) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L909-L911
+
+
+ - [ ] ID-96
+[EnumerableMap.at(EnumerableMap.AddressToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1362-L1365) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1362-L1365
+
+
+ - [ ] ID-97
+[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1489-L1499) is never used and should be removed
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1489-L1499
+
+
+ - [ ] ID-98
+[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L811-L821) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L811-L821
+
+
+ - [ ] ID-99
+[EnumerableMap.at(EnumerableMap.Bytes32ToBytes32Map,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1080-L1083) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1080-L1083
+
+
+ - [ ] ID-100
+[EnumerableMap.length(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1255-L1257) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1255-L1257
+
+
+ - [ ] ID-101
+[EnumerableMap.keys(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1121-L1123) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1121-L1123
+
+
+ - [ ] ID-102
+[EnumerableSet.length(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L785-L787) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L785-L787
+
+
+ - [ ] ID-103
+[EnumerableSet.at(EnumerableSet.Bytes32Set,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L799-L801) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L799-L801
+
+
+ - [ ] ID-104
+[Address.sendValue(address,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L263-L272) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L263-L272
+
+
+ - [ ] ID-105
+[EnumerableMap.get(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1195-L1197) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1195-L1197
+
+
+ - [ ] ID-106
+[EnumerableMap.set(EnumerableMap.Bytes32ToUintMap,bytes32,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1420-L1422) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1420-L1422
+
+
+ - [ ] ID-107
+[Address.functionCallWithValue(address,bytes,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L319-L321) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L319-L321
 
 
  - [ ] ID-108
-[EnumerableSet.at(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L443-L445) is never used and should be removed
+[EnumerableSet._length(EnumerableSet.Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L719-L721) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L443-L445
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L719-L721
 
 
  - [ ] ID-109
-[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L797-L807) is never used and should be removed
+[Address.verifyCallResult(bool,bytes,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L426-L436) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L797-L807
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L426-L436
 
 
  - [ ] ID-110
-[EnumerableSet.add(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L331-L333) is never used and should be removed
+[EnumerableSet._at(EnumerableSet.Set,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L733-L735) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L331-L333
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L733-L735
 
 
  - [ ] ID-111
-[EnumerableMap.at(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L764-L767) is never used and should be removed
+[EnumerableSet.remove(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L919-L921) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L764-L767
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L919-L921
 
 
  - [ ] ID-112
-[EnumerableMap.length(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L939-L941) is never used and should be removed
+[EnumerableMap.remove(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1429-L1431) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L939-L941
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1429-L1431
 
 
  - [ ] ID-113
-[EnumerableMap.remove(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L643-L645) is never used and should be removed
+[EnumerableMap.contains(EnumerableMap.AddressToUintMap,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1342-L1344) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L643-L645
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1342-L1344
 
 
  - [ ] ID-114
-[ReentrancyGuard._reentrancyGuardEntered()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L84-L86) is never used and should be removed
+[EnumerableMap.tryGet(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1183-L1186) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L84-L86
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1183-L1186
 
 
  - [ ] ID-115
-[EnumerableMap.get(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L973-L975) is never used and should be removed
+[EnumerableMap.tryGet(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1277-L1280) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L973-L975
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1277-L1280
 
 
  - [ ] ID-116
-[EnumerableSet.add(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L405-L407) is never used and should be removed
+[EnumerableMap.length(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1349-L1351) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L405-L407
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1349-L1351
 
 
  - [ ] ID-117
-[EnumerableMap.at(EnumerableMap.AddressToUintMap,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L858-L861) is never used and should be removed
+[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1207-L1217) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L858-L861
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1207-L1217
 
 
  - [ ] ID-118
-[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L985-L995) is never used and should be removed
+[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1395-L1405) is never used and should be removed
 
-src/core/flattened/LayerCakeDestinationDeploy.f.sol#L985-L995
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1395-L1405
 
 
  - [ ] ID-119
-[EnumerableSet.values(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L384-L394) is never used and should be removed
+[EnumerableMap.set(EnumerableMap.UintToUintMap,uint256,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1138-L1140) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L384-L394
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1138-L1140
 
 
  - [ ] ID-120
-[EnumerableMap.at(EnumerableMap.Bytes32ToBytes32Map,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L653-L656) is never used and should be removed
+[EnumerableMap.tryGet(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1465-L1468) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L653-L656
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1465-L1468
 
 
  - [ ] ID-121
-[EnumerableMap.length(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L828-L830) is never used and should be removed
+[Address.functionDelegateCall(address,bytes)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L369-L371) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L828-L830
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L369-L371
 
 
  - [ ] ID-122
-[EnumerableMap.keys(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L694-L696) is never used and should be removed
+[SafeERC20.safeIncreaseAllowance(IERC20,address,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L503-L506) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L694-L696
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L503-L506
 
 
  - [ ] ID-123
-[EnumerableSet.length(EnumerableSet.Bytes32Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L358-L360) is never used and should be removed
+[EnumerableSet.contains(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L926-L928) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L358-L360
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L926-L928
 
 
  - [ ] ID-124
-[EnumerableSet.at(EnumerableSet.Bytes32Set,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L372-L374) is never used and should be removed
+[SafeERC20.safePermit(IERC20Permit,address,address,uint256,uint256,uint8,bytes32,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L540-L556) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L372-L374
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L540-L556
 
 
  - [ ] ID-125
-[EnumerableMap.get(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L768-L770) is never used and should be removed
+[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L885-L895) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L768-L770
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L885-L895
 
 
  - [ ] ID-126
-[EnumerableMap.set(EnumerableMap.Bytes32ToUintMap,bytes32,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L993-L995) is never used and should be removed
+[EnumerableSet.remove(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L845-L847) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L993-L995
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L845-L847
 
 
  - [ ] ID-127
-[EnumerableSet._length(EnumerableSet.Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L292-L294) is never used and should be removed
+[Address.functionDelegateCall(address,bytes,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L377-L384) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L292-L294
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L377-L384
 
 
  - [ ] ID-128
-[EnumerableSet._at(EnumerableSet.Set,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L306-L308) is never used and should be removed
+[EnumerableMap.remove(EnumerableMap.AddressToUintMap,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1335-L1337) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L306-L308
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1335-L1337
 
 
  - [ ] ID-129
-[EnumerableSet.remove(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L492-L494) is never used and should be removed
+[Address.functionStaticCall(address,bytes,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L356-L363) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L492-L494
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L356-L363
 
 
  - [ ] ID-130
-[EnumerableMap.remove(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1002-L1004) is never used and should be removed
+[EnumerableMap.contains(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1154-L1156) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1002-L1004
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1154-L1156
 
 
  - [ ] ID-131
-[EnumerableMap.contains(EnumerableMap.AddressToUintMap,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L915-L917) is never used and should be removed
+[EnumerableMap.contains(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1436-L1438) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L915-L917
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1436-L1438
 
 
  - [ ] ID-132
-[EnumerableMap.tryGet(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L756-L759) is never used and should be removed
+[EnumerableSet.at(EnumerableSet.AddressSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L873-L875) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L756-L759
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L873-L875
 
 
  - [ ] ID-133
-[EnumerableMap.tryGet(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L850-L853) is never used and should be removed
+[EnumerableSet.contains(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L852-L854) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L850-L853
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L852-L854
 
 
  - [ ] ID-134
-[EnumerableMap.length(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L922-L924) is never used and should be removed
+[EnumerableMap.at(EnumerableMap.Bytes32ToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1456-L1459) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L922-L924
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1456-L1459
 
 
  - [ ] ID-135
-[EnumerableMap.keys(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L780-L790) is never used and should be removed
+[EnumerableSet.length(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L859-L861) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L780-L790
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L859-L861
 
 
  - [ ] ID-136
-[EnumerableMap.keys(EnumerableMap.AddressToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L968-L978) is never used and should be removed
+[EnumerableSet._values(EnumerableSet.Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L745-L747) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L968-L978
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L745-L747
 
 
  - [ ] ID-137
-[EnumerableMap.set(EnumerableMap.UintToUintMap,uint256,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L711-L713) is never used and should be removed
+[Address.functionCall(address,bytes,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L302-L308) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L711-L713
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L302-L308
 
 
  - [ ] ID-138
-[EnumerableMap.tryGet(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1038-L1041) is never used and should be removed
+[EnumerableMap.remove(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1241-L1243) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1038-L1041
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1241-L1243
 
 
  - [ ] ID-139
-[EnumerableSet.contains(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L499-L501) is never used and should be removed
+[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L959-L969) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L499-L501
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L959-L969
 
 
  - [ ] ID-140
-[EnumerableSet.values(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L458-L468) is never used and should be removed
+[EnumerableMap.contains(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1248-L1250) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L458-L468
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1248-L1250
 
 
  - [ ] ID-141
-[EnumerableSet.remove(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L418-L420) is never used and should be removed
+[Address.functionStaticCall(address,bytes)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L348-L350) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L418-L420
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L348-L350
 
 
  - [ ] ID-142
-[EnumerableMap.remove(EnumerableMap.AddressToUintMap,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L908-L910) is never used and should be removed
+[EnumerableMap.length(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1066-L1068) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L908-L910
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1066-L1068
 
 
  - [ ] ID-143
-[EnumerableMap.contains(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L727-L729) is never used and should be removed
+[EnumerableMap.length(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1161-L1163) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L727-L729
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1161-L1163
 
 
  - [ ] ID-144
-[EnumerableMap.contains(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1009-L1011) is never used and should be removed
+[EnumerableMap.at(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1174-L1177) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1009-L1011
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1174-L1177
 
 
  - [ ] ID-145
-[EnumerableSet.at(EnumerableSet.AddressSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L446-L448) is never used and should be removed
+[SafeERC20._callOptionalReturnBool(IERC20,bytes)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L583-L590) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L446-L448
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L583-L590
 
 
  - [ ] ID-146
-[EnumerableSet.contains(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L425-L427) is never used and should be removed
+[Address.defaultRevert()](src/core/flattened/LayerCakeOriginDeploy.f.sol#L441-L443) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L425-L427
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L441-L443
 
 
  - [ ] ID-147
-[EnumerableMap.at(EnumerableMap.Bytes32ToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1029-L1032) is never used and should be removed
+[SafeERC20.forceApprove(IERC20,address,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L527-L534) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1029-L1032
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L527-L534
 
 
  - [ ] ID-148
-[EnumerableSet.length(EnumerableSet.AddressSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L432-L434) is never used and should be removed
+[EnumerableSet.length(EnumerableSet.UintSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L933-L935) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L432-L434
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L933-L935
 
 
  - [ ] ID-149
-[EnumerableSet._values(EnumerableSet.Set)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L318-L320) is never used and should be removed
+[EnumerableMap.get(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1289-L1291) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L318-L320
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1289-L1291
 
 
  - [ ] ID-150
-[EnumerableMap.remove(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L814-L816) is never used and should be removed
+[EnumerableMap.remove(EnumerableMap.Bytes32ToBytes32Map,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1051-L1054) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L814-L816
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1051-L1054
 
 
  - [ ] ID-151
-[EnumerableSet.values(EnumerableSet.UintSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L532-L542) is never used and should be removed
+[SafeERC20.safeDecreaseAllowance(IERC20,address,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L512-L520) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L532-L542
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L512-L520
 
 
  - [ ] ID-152
-[EnumerableMap.contains(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L821-L823) is never used and should be removed
+[EnumerableMap.set(EnumerableMap.UintToAddressMap,uint256,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1232-L1234) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L821-L823
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1232-L1234
 
 
  - [ ] ID-153
-[EnumerableMap.length(EnumerableMap.Bytes32ToBytes32Map)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L639-L641) is never used and should be removed
+[EnumerableSet.at(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L947-L949) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L639-L641
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L947-L949
 
 
  - [ ] ID-154
-[EnumerableMap.length(EnumerableMap.UintToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L734-L736) is never used and should be removed
+[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1301-L1311) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L734-L736
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1301-L1311
 
 
  - [ ] ID-155
-[EnumerableMap.at(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L747-L750) is never used and should be removed
+[EnumerableSet.add(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L835-L837) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L747-L750
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L835-L837
 
 
  - [ ] ID-156
-[EnumerableSet.length(EnumerableSet.UintSet)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L506-L508) is never used and should be removed
+[EnumerableMap.at(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1268-L1271) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L506-L508
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1268-L1271
 
 
  - [ ] ID-157
-[EnumerableMap.get(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L862-L864) is never used and should be removed
+[Address.verifyCallResult(bool,bytes)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L414-L416) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L862-L864
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L414-L416
 
 
  - [ ] ID-158
-[EnumerableMap.remove(EnumerableMap.Bytes32ToBytes32Map,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L624-L627) is never used and should be removed
+[EnumerableMap.length(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1443-L1445) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L624-L627
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1443-L1445
 
 
  - [ ] ID-159
-[EnumerableMap.set(EnumerableMap.UintToAddressMap,uint256,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L805-L807) is never used and should be removed
+[EnumerableMap.remove(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1147-L1149) is never used and should be removed
 
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L805-L807
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1147-L1149
 
 
  - [ ] ID-160
-[EnumerableSet.at(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L520-L522) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L520-L522
-
-
- - [ ] ID-161
-[EnumerableMap.keys(EnumerableMap.UintToAddressMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L874-L884) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L874-L884
-
-
- - [ ] ID-162
-[EnumerableSet.add(EnumerableSet.AddressSet,address)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L408-L410) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L408-L410
-
-
- - [ ] ID-163
-[EnumerableMap.at(EnumerableMap.UintToAddressMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L841-L844) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L841-L844
-
-
- - [ ] ID-164
-[EnumerableMap.length(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1016-L1018) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1016-L1018
-
-
- - [ ] ID-165
-[EnumerableMap.remove(EnumerableMap.UintToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L720-L722) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L720-L722
-
-
- - [ ] ID-166
 [ReentrancyGuard._reentrancyGuardEntered()](src/core/flattened/LayerCakeOriginDeploy.f.sol#L84-L86) is never used and should be removed
 
 src/core/flattened/LayerCakeOriginDeploy.f.sol#L84-L86
 
 
+ - [ ] ID-161
+[EnumerableMap.get(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1477-L1479) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1477-L1479
+
+
+ - [ ] ID-162
+[EnumerableSet._remove(EnumerableSet.Set,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L675-L707) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L675-L707
+
+
+ - [ ] ID-163
+[EnumerableSet.add(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L909-L911) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L909-L911
+
+
+ - [ ] ID-164
+[EnumerableSet.remove(EnumerableSet.Bytes32Set,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L771-L773) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L771-L773
+
+
+ - [ ] ID-165
+[EnumerableMap.at(EnumerableMap.AddressToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1362-L1365) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1362-L1365
+
+
+ - [ ] ID-166
+[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1489-L1499) is never used and should be removed
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1489-L1499
+
+
  - [ ] ID-167
-[EnumerableMap.get(EnumerableMap.Bytes32ToUintMap,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1050-L1052) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1050-L1052
-
-
- - [ ] ID-168
-[EnumerableSet._remove(EnumerableSet.Set,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L248-L280) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L248-L280
-
-
- - [ ] ID-169
-[EnumerableSet.add(EnumerableSet.UintSet,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L482-L484) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L482-L484
-
-
- - [ ] ID-170
-[EnumerableSet.remove(EnumerableSet.Bytes32Set,bytes32)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L344-L346) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L344-L346
-
-
- - [ ] ID-171
-[EnumerableMap.at(EnumerableMap.AddressToUintMap,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L935-L938) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L935-L938
-
-
- - [ ] ID-172
-[EnumerableMap.keys(EnumerableMap.Bytes32ToUintMap)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1062-L1072) is never used and should be removed
-
-src/core/flattened/LayerCakeOriginDeploy.f.sol#L1062-L1072
-
-
- - [ ] ID-173
 [ERC20._burn(address,uint256)](src/core/flattened/LayerCakeTransportedToken.f.sol#L577-L582) is never used and should be removed
 
 src/core/flattened/LayerCakeTransportedToken.f.sol#L577-L582
 
 
- - [ ] ID-174
+ - [ ] ID-168
 [Context._msgData()](src/core/flattened/LayerCakeTransportedToken.f.sol#L125-L127) is never used and should be removed
 
 src/core/flattened/LayerCakeTransportedToken.f.sol#L125-L127
 
 
- - [ ] ID-175
-[ReentrancyGuard._reentrancyGuardEntered()](src/core/flattened/LayerCakeCalldataInterface.f.sol#L84-L86) is never used and should be removed
+ - [ ] ID-169
+[Address.sendValue(address,uint256)](src/core/flattened/LayerCake.f.sol#L181-L190) is never used and should be removed
 
-src/core/flattened/LayerCakeCalldataInterface.f.sol#L84-L86
+src/core/flattened/LayerCake.f.sol#L181-L190
+
+
+ - [ ] ID-170
+[Address.functionCallWithValue(address,bytes,uint256)](src/core/flattened/LayerCake.f.sol#L237-L239) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L237-L239
+
+
+ - [ ] ID-171
+[Address.verifyCallResult(bool,bytes,function())](src/core/flattened/LayerCake.f.sol#L344-L354) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L344-L354
+
+
+ - [ ] ID-172
+[Address.functionDelegateCall(address,bytes)](src/core/flattened/LayerCake.f.sol#L287-L289) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L287-L289
+
+
+ - [ ] ID-173
+[SafeERC20.safeIncreaseAllowance(IERC20,address,uint256)](src/core/flattened/LayerCake.f.sol#L421-L424) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L421-L424
+
+
+ - [ ] ID-174
+[SafeERC20.safePermit(IERC20Permit,address,address,uint256,uint256,uint8,bytes32,bytes32)](src/core/flattened/LayerCake.f.sol#L458-L474) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L458-L474
+
+
+ - [ ] ID-175
+[Address.functionDelegateCall(address,bytes,function())](src/core/flattened/LayerCake.f.sol#L295-L302) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L295-L302
 
 
  - [ ] ID-176
-[ReentrancyGuard._reentrancyGuardEntered()](src/core/flattened/LayerCake.f.sol#L620-L622) is never used and should be removed
+[Address.functionStaticCall(address,bytes,function())](src/core/flattened/LayerCake.f.sol#L274-L281) is never used and should be removed
 
-src/core/flattened/LayerCake.f.sol#L620-L622
+src/core/flattened/LayerCake.f.sol#L274-L281
 
+
+ - [ ] ID-177
+[Address.functionCall(address,bytes,function())](src/core/flattened/LayerCake.f.sol#L220-L226) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L220-L226
+
+
+ - [ ] ID-178
+[Address.functionStaticCall(address,bytes)](src/core/flattened/LayerCake.f.sol#L266-L268) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L266-L268
+
+
+ - [ ] ID-179
+[SafeERC20._callOptionalReturnBool(IERC20,bytes)](src/core/flattened/LayerCake.f.sol#L501-L508) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L501-L508
+
+
+ - [ ] ID-180
+[Address.defaultRevert()](src/core/flattened/LayerCake.f.sol#L359-L361) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L359-L361
+
+
+ - [ ] ID-181
+[SafeERC20.forceApprove(IERC20,address,uint256)](src/core/flattened/LayerCake.f.sol#L445-L452) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L445-L452
+
+
+ - [ ] ID-182
+[SafeERC20.safeDecreaseAllowance(IERC20,address,uint256)](src/core/flattened/LayerCake.f.sol#L430-L438) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L430-L438
+
+
+ - [ ] ID-183
+[Address.verifyCallResult(bool,bytes)](src/core/flattened/LayerCake.f.sol#L332-L334) is never used and should be removed
+
+src/core/flattened/LayerCake.f.sol#L332-L334
+
+
+## solc-version
+Impact: Informational
+Confidence: High
+ - [ ] ID-184
+solc-0.8.19 is not recommended for deployment
+
+ - [ ] ID-185
+Pragma version[0.8.19](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L5
+
+
+ - [ ] ID-186
+Pragma version[0.8.19](src/core/flattened/LayerCakeOriginDeploy.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L5
+
+
+ - [ ] ID-187
+solc-0.8.19 is not recommended for deployment
+
+ - [ ] ID-188
+Pragma version[0.8.19](src/core/flattened/LayerCakeTransportedToken.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+
+src/core/flattened/LayerCakeTransportedToken.f.sol#L5
+
+
+ - [ ] ID-189
+solc-0.8.19 is not recommended for deployment
+
+ - [ ] ID-190
+solc-0.8.19 is not recommended for deployment
+
+ - [ ] ID-191
+Pragma version[0.8.19](src/core/flattened/LayerCakeDeployTools.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+
+src/core/flattened/LayerCakeDeployTools.f.sol#L5
+
+
+ - [ ] ID-192
+Pragma version[0.8.19](src/core/flattened/LayerCake.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+
+src/core/flattened/LayerCake.f.sol#L5
+
+
+ - [ ] ID-193
+solc-0.8.19 is not recommended for deployment
+
+ - [ ] ID-194
+Pragma version[0.8.19](src/core/flattened/LayerCakeTools.f.sol#L5) necessitates a version too recent to be trusted. Consider deploying with 0.8.18.
+
+src/core/flattened/LayerCakeTools.f.sol#L5
+
+
+ - [ ] ID-195
+solc-0.8.19 is not recommended for deployment
 
 ## low-level-calls
 Impact: Informational
 Confidence: High
- - [ ] ID-177
-Low level call in [LayerCakeCalldataInterface.execute(address,bytes)](src/core/flattened/LayerCakeCalldataInterface.f.sol#L90-L100):
-	- [(success,result) = address(recipient).call(callData)](src/core/flattened/LayerCakeCalldataInterface.f.sol#L92)
+ - [ ] ID-196
+Low level call in [Address.functionStaticCall(address,bytes,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L274-L281):
+	- [(success,returndata) = target.staticcall(data)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L279)
 
-src/core/flattened/LayerCakeCalldataInterface.f.sol#L90-L100
-
-
- - [ ] ID-178
-Low level call in [LayerCakeCalldataInterface.execute(address,bytes)](src/core/flattened/LayerCake.f.sol#L626-L636):
-	- [(success,result) = address(recipient).call(callData)](src/core/flattened/LayerCake.f.sol#L628)
-
-src/core/flattened/LayerCake.f.sol#L626-L636
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L274-L281
 
 
-## weak-prng
-Impact: High
+ - [ ] ID-197
+Low level call in [Address.functionCallWithValue(address,bytes,uint256,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L249-L260):
+	- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L258)
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L249-L260
+
+
+ - [ ] ID-198
+Low level call in [Address.functionDelegateCall(address,bytes,function())](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L295-L302):
+	- [(success,returndata) = target.delegatecall(data)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L300)
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L295-L302
+
+
+ - [ ] ID-199
+Low level call in [Address.sendValue(address,uint256)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L181-L190):
+	- [(success) = recipient.call{value: amount}()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L186)
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L181-L190
+
+
+ - [ ] ID-200
+Low level call in [SafeERC20._callOptionalReturnBool(IERC20,bytes)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L501-L508):
+	- [(success,returndata) = address(token).call(data)](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L506)
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L501-L508
+
+
+ - [ ] ID-201
+Low level call in [Address.sendValue(address,uint256)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L263-L272):
+	- [(success) = recipient.call{value: amount}()](src/core/flattened/LayerCakeOriginDeploy.f.sol#L268)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L263-L272
+
+
+ - [ ] ID-202
+Low level call in [Address.functionDelegateCall(address,bytes,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L377-L384):
+	- [(success,returndata) = target.delegatecall(data)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L382)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L377-L384
+
+
+ - [ ] ID-203
+Low level call in [SafeERC20._callOptionalReturnBool(IERC20,bytes)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L583-L590):
+	- [(success,returndata) = address(token).call(data)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L588)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L583-L590
+
+
+ - [ ] ID-204
+Low level call in [Address.functionStaticCall(address,bytes,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L356-L363):
+	- [(success,returndata) = target.staticcall(data)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L361)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L356-L363
+
+
+ - [ ] ID-205
+Low level call in [Address.functionCallWithValue(address,bytes,uint256,function())](src/core/flattened/LayerCakeOriginDeploy.f.sol#L331-L342):
+	- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L340)
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L331-L342
+
+
+ - [ ] ID-206
+Low level call in [Address.functionDelegateCall(address,bytes,function())](src/core/flattened/LayerCake.f.sol#L295-L302):
+	- [(success,returndata) = target.delegatecall(data)](src/core/flattened/LayerCake.f.sol#L300)
+
+src/core/flattened/LayerCake.f.sol#L295-L302
+
+
+ - [ ] ID-207
+Low level call in [Address.functionStaticCall(address,bytes,function())](src/core/flattened/LayerCake.f.sol#L274-L281):
+	- [(success,returndata) = target.staticcall(data)](src/core/flattened/LayerCake.f.sol#L279)
+
+src/core/flattened/LayerCake.f.sol#L274-L281
+
+
+ - [ ] ID-208
+Low level call in [SafeERC20._callOptionalReturnBool(IERC20,bytes)](src/core/flattened/LayerCake.f.sol#L501-L508):
+	- [(success,returndata) = address(token).call(data)](src/core/flattened/LayerCake.f.sol#L506)
+
+src/core/flattened/LayerCake.f.sol#L501-L508
+
+
+ - [ ] ID-209
+Low level call in [Address.sendValue(address,uint256)](src/core/flattened/LayerCake.f.sol#L181-L190):
+	- [(success) = recipient.call{value: amount}()](src/core/flattened/LayerCake.f.sol#L186)
+
+src/core/flattened/LayerCake.f.sol#L181-L190
+
+
+ - [ ] ID-210
+Low level call in [Address.functionCallWithValue(address,bytes,uint256,function())](src/core/flattened/LayerCake.f.sol#L249-L260):
+	- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCake.f.sol#L258)
+
+src/core/flattened/LayerCake.f.sol#L249-L260
+
+
+## naming-convention
+Impact: Informational
+Confidence: High
+ - [ ] ID-211
+Function [IERC20Permit.DOMAIN_SEPARATOR()](src/core/flattened/LayerCakeDestinationDeploy.f.sol#L141) is not in mixedCase
+
+src/core/flattened/LayerCakeDestinationDeploy.f.sol#L141
+
+
+ - [ ] ID-212
+Function [IERC20Permit.DOMAIN_SEPARATOR()](src/core/flattened/LayerCakeOriginDeploy.f.sol#L223) is not in mixedCase
+
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L223
+
+
+ - [ ] ID-213
+Function [IERC20Permit.DOMAIN_SEPARATOR()](src/core/flattened/LayerCake.f.sol#L141) is not in mixedCase
+
+src/core/flattened/LayerCake.f.sol#L141
+
+
+## timestamp
+Impact: Low
 Confidence: Medium
- - [ ] ID-179
-[LayerCakeStorageManager._getStorageSlot(uint256)](src/core/flattened/LayerCake.f.sol#L454-L467) uses a weak PRNG: "[thisStorageSlot = thisStorageEpoch % STORAGE_SLOTS](src/core/flattened/LayerCake.f.sol#L463)" 
+ - [ ] ID-214
+[LayerCakeOriginDeploy.transferDepositsToLayerCake()](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1572-L1577) uses timestamp for comparisons
+	Dangerous comparisons:
+	- [require(bool,string)(block.timestamp >= deployTime,DLC1)](src/core/flattened/LayerCakeOriginDeploy.f.sol#L1573)
 
-src/core/flattened/LayerCake.f.sol#L454-L467
+src/core/flattened/LayerCakeOriginDeploy.f.sol#L1572-L1577
 
 
- - [ ] ID-180
-[LayerCakeStorageManager._getStorageSlot(uint256)](src/core/flattened/LayerCakeStorageManager.f.sol#L155-L168) uses a weak PRNG: "[thisStorageSlot = thisStorageEpoch % STORAGE_SLOTS](src/core/flattened/LayerCakeStorageManager.f.sol#L164)" 
+ - [ ] ID-215
+[LayerCake._executeOperations(LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L802-L813) uses timestamp for comparisons
+	Dangerous comparisons:
+	- [require(bool,string)(block.timestamp >= executionProof.operations.executionTime,EO2)](src/core/flattened/LayerCake.f.sol#L804)
 
-src/core/flattened/LayerCakeStorageManager.f.sol#L155-L168
+src/core/flattened/LayerCake.f.sol#L802-L813
+
+
+ - [ ] ID-216
+[LayerCake.increaseFee(bytes32,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L739-L746) uses timestamp for comparisons
+	Dangerous comparisons:
+	- [require(bool,string)(block.timestamp >= executionTime,IF1)](src/core/flattened/LayerCake.f.sol#L740)
+
+src/core/flattened/LayerCake.f.sol#L739-L746
+
+
+ - [ ] ID-217
+[LayerCake._storeOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L790-L800) uses timestamp for comparisons
+	Dangerous comparisons:
+	- [require(bool,string)(operations.recipient != address(0),SO1)](src/core/flattened/LayerCake.f.sol#L791)
+	- [require(bool,string)(operations.sender == msg.sender,SO2)](src/core/flattened/LayerCake.f.sol#L792)
+	- [require(bool,string)(operations.amount >= operations.fee,SO4)](src/core/flattened/LayerCake.f.sol#L793)
+
+src/core/flattened/LayerCake.f.sol#L790-L800
+
+
+ - [ ] ID-218
+[LayerCake._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L839-L880) uses timestamp for comparisons
+	Dangerous comparisons:
+	- [require(bool,string)(! bp.negated && block.timestamp - bp.timeLastNegated > 2 * params.reorgAssumption,PB1)](src/core/flattened/LayerCake.f.sol#L841)
+	- [require(bool,string)(block.timestamp >= bp.timeLastActive,PB2)](src/core/flattened/LayerCake.f.sol#L842)
+	- [(block.timestamp - bp.startTime) / (2 * params.reorgAssumption) > (bp.timeLastActive - bp.startTime) / (2 * params.reorgAssumption)](src/core/flattened/LayerCake.f.sol#L846-L847)
+	- [bp.currentUsedBandwidth > bp.currentTotalBandwidth || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth](src/core/flattened/LayerCake.f.sol#L851-L852)
+	- [require(bool,string)(block.timestamp - bp.timeLastActive > params.reorgAssumption,PB3)](src/core/flattened/LayerCake.f.sol#L854)
+	- [require(bool,string)(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount,PB4)](src/core/flattened/LayerCake.f.sol#L859)
+	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L861)
+	- [require(bool,string)(bp.currentTotalBandwidth >= params.minBandwidth,PB5)](src/core/flattened/LayerCake.f.sol#L867)
+	- [require(bool,string)(bp.currentTotalBandwidth <= params.minBandwidth * params.maxBandwidthMultiple,PB6)](src/core/flattened/LayerCake.f.sol#L868)
+	- [bp.currentTotalBandwidth > 0](src/core/flattened/LayerCake.f.sol#L875)
+	- [require(bool,string)(bp.currentTotalBandwidth >= params.minBandwidth,PB7)](src/core/flattened/LayerCake.f.sol#L876)
+
+src/core/flattened/LayerCake.f.sol#L839-L880
+
+
+ - [ ] ID-219
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L882-L913) uses timestamp for comparisons
+	Dangerous comparisons:
+	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB1)](src/core/flattened/LayerCake.f.sol#L891)
+	- [bp.negationCounter > 1](src/core/flattened/LayerCake.f.sol#L894)
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCake.f.sol#L895)
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple,NB3)](src/core/flattened/LayerCake.f.sol#L898)
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCake.f.sol#L904)
+	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCake.f.sol#L908)
+
+src/core/flattened/LayerCake.f.sol#L882-L913
+
+
+ - [ ] ID-220
+[LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L694-L716) uses timestamp for comparisons
+	Dangerous comparisons:
+	- [require(bool,string)(operations.negatedBandwidthProvider != address(0),SNO1)](src/core/flattened/LayerCake.f.sol#L697)
+	- [require(bool,string)(getInvalidExecutionProofId(invalidExecutionProof) == operations.invalidExecutionProofId,SNO2)](src/core/flattened/LayerCake.f.sol#L698)
+	- [require(bool,string)(recoverSigner(getExecutionId(arrivingPathwayId,invalidExecutionProof.operations),invalidExecutionProof) == operations.negatedBandwidthProvider,SNO3)](src/core/flattened/LayerCake.f.sol#L699-L703)
+
+src/core/flattened/LayerCake.f.sol#L694-L716
+
+
+## reentrancy-benign
+Impact: Low
+Confidence: Medium
+ - [ ] ID-221
+Reentrancy in [LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L694-L716):
+	External calls:
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L705)
+	State variables written after the call(s):
+	- [operations.amount = _negateBp(operations.negatedBandwidthProvider,operations.amount,operations.fee,operations.initialNegation,operations.invalidExecutionProofId)](src/core/flattened/LayerCake.f.sol#L707-L713)
+		- [bpInfo[bandwidthProvider] = bp](src/core/flattened/LayerCake.f.sol#L911)
+	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L714)
+		- [storedExecutionIds[executionId] = true](src/core/flattened/LayerCake.f.sol#L798)
+
+src/core/flattened/LayerCake.f.sol#L694-L716
+
+
+ - [ ] ID-222
+Reentrancy in [LayerCake.storeStandardOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L686-L692):
+	External calls:
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L689)
+	State variables written after the call(s):
+	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L691)
+		- [storedExecutionIds[executionId] = true](src/core/flattened/LayerCake.f.sol#L798)
+
+src/core/flattened/LayerCake.f.sol#L686-L692
+
+
+ - [ ] ID-223
+Reentrancy in [LayerCake.increaseFee(bytes32,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L739-L746):
+	External calls:
+	- [token.safeTransferFrom(msg.sender,address(this),addedFee)](src/core/flattened/LayerCake.f.sol#L742)
+	State variables written after the call(s):
+	- [preparedExecutionIds[executionId].feeIncrease = preparedExecutionIds[executionId].feeIncrease + addedFee](src/core/flattened/LayerCake.f.sol#L745)
+
+src/core/flattened/LayerCake.f.sol#L739-L746
 
 
 ## reentrancy-events
 Impact: Low
 Confidence: Medium
- - [ ] ID-181
-Reentrancy in [LayerCake.storeNegationOperations(LayerCakeExecutionProof.Operations)](src/core/flattened/LayerCake.f.sol#L748-L762):
+ - [ ] ID-224
+Reentrancy in [LayerCake.executeNegationOperations(LayerCakeTools.ExecutionProof,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L763-L784):
 	External calls:
-	- [require(bool,string)(token.transferFrom(msg.sender,address(this),operations.amount),SNO3)](src/core/flattened/LayerCake.f.sol#L752)
-	- [operations.amount = bandwidthManager.negateBp(operations.negatedBandwidthProvider,operations.amount,operations.fee,operations.initialNegation,operations.invalidExecutionProofId)](src/core/flattened/LayerCake.f.sol#L754-L760)
-	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L761)
-		- [storageManager.storeExecutionId(operations.executionTime,executionId)](src/core/flattened/LayerCake.f.sol#L885)
+	- [(executionPrepared) = _executeOperations(negationExecutionProof)](src/core/flattened/LayerCake.f.sol#L775)
+		- [returndata = address(token).functionCall(data)](src/core/flattened/LayerCake.f.sol#L487)
+		- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCake.f.sol#L258)
+		- [token.safeTransfer(msg.sender,partialFee)](src/core/flattened/LayerCake.f.sol#L810)
+	- [token.safeTransfer(negationExecutionProof.operations.recipient,negationExecutionProof.operations.amount - negationExecutionProof.operations.fee)](src/core/flattened/LayerCake.f.sol#L779-L782)
+	External calls sending eth:
+	- [(executionPrepared) = _executeOperations(negationExecutionProof)](src/core/flattened/LayerCake.f.sol#L775)
+		- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCake.f.sol#L258)
 	Event emitted after the call(s):
-	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L886)
-		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L761)
+	- [NegationStored(negationExecutionProof.operations.negatedBandwidthProvider,invalidExecutionProof)](src/core/flattened/LayerCake.f.sol#L783)
 
-src/core/flattened/LayerCake.f.sol#L748-L762
+src/core/flattened/LayerCake.f.sol#L763-L784
 
 
- - [ ] ID-182
-Reentrancy in [LayerCake._executeOperations(LayerCakeExecutionProof.ExecutionProof,bool)](src/core/flattened/LayerCake.f.sol#L889-L902):
+ - [ ] ID-225
+Reentrancy in [LayerCake._executeOperations(LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L802-L813):
 	External calls:
-	- [(partialFee,bandwidthUsed,executionPrepared) = storageManager.prepareExecutionId(executionId,executionProof)](src/core/flattened/LayerCake.f.sol#L893-L894)
-	- [bandwidthManager.proveBandwidth(msg.sender,bandwidthUsed)](src/core/flattened/LayerCake.f.sol#L897)
-	- [require(bool,string)(token.transfer(msg.sender,partialFee),EO4)](src/core/flattened/LayerCake.f.sol#L898)
+	- [token.safeTransfer(msg.sender,partialFee)](src/core/flattened/LayerCake.f.sol#L810)
 	Event emitted after the call(s):
-	- [OperationsExecuted(executionId,msg.sender,executionProof,executionPrepared)](src/core/flattened/LayerCake.f.sol#L900)
+	- [OperationsExecuted(executionId,msg.sender,executionProof,executionPrepared)](src/core/flattened/LayerCake.f.sol#L811)
 
-src/core/flattened/LayerCake.f.sol#L889-L902
+src/core/flattened/LayerCake.f.sol#L802-L813
 
 
- - [ ] ID-183
-Reentrancy in [LayerCake.subtractBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L773-L777):
+ - [ ] ID-226
+Reentrancy in [LayerCake.addBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L718-L728):
 	External calls:
-	- [withdrawnAmount = bandwidthManager.subtractBandwidth(msg.sender,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L774)
-	- [require(bool,string)(token.transfer(msg.sender,withdrawnAmount),SB1)](src/core/flattened/LayerCake.f.sol#L775)
+	- [token.safeTransferFrom(msg.sender,address(this),depositedAmount)](src/core/flattened/LayerCake.f.sol#L724)
 	Event emitted after the call(s):
-	- [BandwidthChanged(msg.sender,false,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L776)
+	- [BandwidthChanged(msg.sender,true,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L727)
 
-src/core/flattened/LayerCake.f.sol#L773-L777
+src/core/flattened/LayerCake.f.sol#L718-L728
 
 
- - [ ] ID-184
-Reentrancy in [LayerCake.storeStandardOperations(LayerCakeExecutionProof.Operations)](src/core/flattened/LayerCake.f.sol#L716-L730):
+ - [ ] ID-227
+Reentrancy in [LayerCake.subtractBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L730-L737):
 	External calls:
-	- [require(bool,string)(token.transferFrom(msg.sender,forwardedFeeRecipient,forwardedFee),SSO4)](src/core/flattened/LayerCake.f.sol#L723)
-	- [require(bool,string)(token.transferFrom(msg.sender,address(this),operations.amount),SSO6)](src/core/flattened/LayerCake.f.sol#L727)
-	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L729)
-		- [storageManager.storeExecutionId(operations.executionTime,executionId)](src/core/flattened/LayerCake.f.sol#L885)
+	- [token.safeTransfer(msg.sender,withdrawnAmount)](src/core/flattened/LayerCake.f.sol#L735)
 	Event emitted after the call(s):
-	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L886)
-		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L729)
+	- [BandwidthChanged(msg.sender,false,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L736)
 
-src/core/flattened/LayerCake.f.sol#L716-L730
+src/core/flattened/LayerCake.f.sol#L730-L737
 
 
- - [ ] ID-185
-Reentrancy in [LayerCake.addBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L764-L771):
+ - [ ] ID-228
+Reentrancy in [LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L694-L716):
 	External calls:
-	- [depositedAmount = bandwidthManager.addBandwidth(msg.sender,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L765)
-	- [require(bool,string)(token.transferFrom(msg.sender,address(this),depositedAmount),AB1)](src/core/flattened/LayerCake.f.sol#L767)
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L705)
 	Event emitted after the call(s):
-	- [BandwidthChanged(msg.sender,true,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L770)
+	- [NegationStored(operations.negatedBandwidthProvider,invalidExecutionProof)](src/core/flattened/LayerCake.f.sol#L715)
+	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L799)
+		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L714)
 
-src/core/flattened/LayerCake.f.sol#L764-L771
+src/core/flattened/LayerCake.f.sol#L694-L716
 
 
- - [ ] ID-186
-Reentrancy in [LayerCake.cancelStandardOperations(LayerCakeExecutionProof.Operations)](src/core/flattened/LayerCake.f.sol#L732-L746):
+ - [ ] ID-229
+Reentrancy in [LayerCake.storeStandardOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L686-L692):
 	External calls:
-	- [(partialFee,executionPrepared) = _executeOperations(cancelExecutionProof,true)](src/core/flattened/LayerCake.f.sol#L741)
-		- [(partialFee,bandwidthUsed,executionPrepared) = storageManager.prepareExecutionId(executionId,executionProof)](src/core/flattened/LayerCake.f.sol#L893-L894)
-		- [bandwidthManager.proveBandwidth(msg.sender,bandwidthUsed)](src/core/flattened/LayerCake.f.sol#L897)
-		- [require(bool,string)(token.transfer(msg.sender,partialFee),EO4)](src/core/flattened/LayerCake.f.sol#L898)
-	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L745)
-		- [storageManager.storeExecutionId(operations.executionTime,executionId)](src/core/flattened/LayerCake.f.sol#L885)
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L689)
 	Event emitted after the call(s):
-	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L886)
-		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L745)
+	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L799)
+		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L691)
 
-src/core/flattened/LayerCake.f.sol#L732-L746
-
-
- - [ ] ID-187
-Reentrancy in [LayerCake._storeOperations(LayerCakeExecutionProof.Operations)](src/core/flattened/LayerCake.f.sol#L873-L887):
-	External calls:
-	- [storageManager.storeExecutionId(operations.executionTime,executionId)](src/core/flattened/LayerCake.f.sol#L885)
-	Event emitted after the call(s):
-	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L886)
-
-src/core/flattened/LayerCake.f.sol#L873-L887
+src/core/flattened/LayerCake.f.sol#L686-L692
 
 

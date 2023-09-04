@@ -32,9 +32,8 @@ contract NegationOperationsController is Test, LayerCakeTools {
         uint256 destinationBpPk1 = 2000;
         address destinationBp1 = vm.addr(destinationBpPk1);
 
-        Operations memory standardOperations = Operations(
-            1, 10000, 0, destinationBp1, destinationBp1, block.timestamp, 0, "", false, 0, address(0), false, ""
-        );
+        Operations memory standardOperations =
+            Operations(1, 10000, 0, destinationBp1, destinationBp1, block.timestamp, address(0), false, "");
 
         // Execute operations on the destination chain that have not been stored on the origin chain
         bytes32 executionId =
@@ -59,16 +58,13 @@ contract NegationOperationsController is Test, LayerCakeTools {
         vm.etch(originUser1, c.userControllerCode());
         // Send user 10000 testWETH
         uint256 amount = 10000;
-        c.originToken().transfer(originUser1, amount + amount / c.originLayercake().forwardedFeeDenominator());
-        assertEq(
-            c.originToken().balanceOf(originUser1), amount + amount / c.originLayercake().forwardedFeeDenominator()
-        );
+        c.originToken().transfer(originUser1, amount);
+        assertEq(c.originToken().balanceOf(originUser1), amount);
 
         // Standard operations transfering 10000 testWETH with a fee of 10 testWETH
         address destinationUser1 = address(vm.addr(4000));
-        Operations memory standardOperations = Operations(
-            1, amount, 10, originUser1, destinationUser1, block.timestamp, 0, "", false, 0, address(0), false, ""
-        );
+        Operations memory standardOperations =
+            Operations(1, amount, 10, originUser1, destinationUser1, block.timestamp, address(0), false, "");
 
         // Store the operations
         uint256 originLayercakeBalance = c.originToken().balanceOf(address(c.originLayercake()));
@@ -99,9 +95,8 @@ contract NegationOperationsController is Test, LayerCakeTools {
         uint256 destinationBpPk1 = 2000;
         address destinationBp1 = vm.addr(destinationBpPk1);
 
-        Operations memory standardOperations = Operations(
-            1, 100000, 0, destinationBp1, destinationBp1, block.timestamp, 0, "", false, 0, address(0), false, ""
-        );
+        Operations memory standardOperations =
+            Operations(1, 100000, 0, destinationBp1, destinationBp1, block.timestamp, address(0), false, "");
 
         // Execute operations on the destination chain that have not been stored on the origin chain
         bytes32 executionId =
@@ -117,14 +112,13 @@ contract NegationOperationsController is Test, LayerCakeTools {
         _invalidExecutionId = c.destinationLayercake().getInvalidExecutionProofId(_invalidExecutionProof);
     }
 
-    function storeInitialNegationOperations(bytes32 _invalidExecutionId)
+    function storeInitialNegationOperations(bytes32 _invalidExecutionId, ExecutionProof memory _invalidExecutionProof)
         public
         returns (Operations memory _negationOperations)
     {
         // Negate the BP
         address destinationUser1 = address(vm.addr(2001));
         vm.etch(destinationUser1, c.userControllerCode());
-        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
 
         _negationOperations = Operations(
             1,
@@ -133,10 +127,6 @@ contract NegationOperationsController is Test, LayerCakeTools {
             destinationUser1,
             vm.addr(4000), // destinationUser1
             block.timestamp,
-            0,
-            "",
-            false,
-            0,
             vm.addr(2000), // negatedBandwidthProvider: originBp1
             true, // initialNegation == true
             _invalidExecutionId
@@ -147,7 +137,7 @@ contract NegationOperationsController is Test, LayerCakeTools {
         vm.recordLogs();
         // Store the negation operations
         UserController(destinationUser1).storeNegationOperations(
-            c.destinationToken(), c.destinationLayercake(), _negationOperations
+            c.destinationToken(), c.destinationLayercake(), _negationOperations, _invalidExecutionProof
         );
         Vm.Log[] memory entries = vm.getRecordedLogs();
         assertGt(entries.length, 0);
@@ -156,11 +146,11 @@ contract NegationOperationsController is Test, LayerCakeTools {
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as negated
-        (bool negated,,,,,,,) = destinationBandwidthManager.bpInfo(_negationOperations.negatedBandwidthProvider);
+        (bool negated,,,,,,,) = c.destinationLayercake().bpInfo(_negationOperations.negatedBandwidthProvider);
         assertTrue(negated);
     }
 
-    function storeReverseNegationOperations(bytes32 _validExecutionId)
+    function storeReverseNegationOperations(bytes32 _validExecutionId, ExecutionProof memory _invalidExecutionProof)
         public
         returns (Operations memory _negationOperations)
     {
@@ -173,10 +163,6 @@ contract NegationOperationsController is Test, LayerCakeTools {
             vm.addr(2000), // sender
             vm.addr(3000), // recipient
             block.timestamp,
-            0,
-            "",
-            false,
-            0,
             vm.addr(2000), // negatedBandwidthProvider: originBp1
             false, // initialNegation == false
             _validExecutionId
@@ -185,7 +171,7 @@ contract NegationOperationsController is Test, LayerCakeTools {
         vm.recordLogs();
         // Store the negation operations
         BandwidthProviderController(vm.addr(2000)).storeNegationOperations(
-            c.destinationToken(), c.destinationLayercake(), _negationOperations
+            c.destinationToken(), c.destinationLayercake(), _negationOperations, _invalidExecutionProof
         );
         Vm.Log[] memory entries = vm.getRecordedLogs();
         assertGt(entries.length, 0);
@@ -194,19 +180,17 @@ contract NegationOperationsController is Test, LayerCakeTools {
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as not negated
-        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
-        (bool negated,,,,,,,) = destinationBandwidthManager.bpInfo(_negationOperations.negatedBandwidthProvider);
+        (bool negated,,,,,,,) = c.destinationLayercake().bpInfo(_negationOperations.negatedBandwidthProvider);
         assertTrue(!negated);
     }
 
-    function storeSelfNegationOperations(bytes32 _invalidExecutionId)
+    function storeSelfNegationOperations(bytes32 _invalidExecutionId, ExecutionProof memory _invalidExecutionProof)
         public
         returns (Operations memory _negationOperations)
     {
         // Negate the BP
         uint256 destinationBpPk1 = 2000;
         address destinationBp1 = vm.addr(destinationBpPk1);
-        LayerCakeBandwidthManager destinationBandwidthManager = c.destinationLayercake().bandwidthManager();
 
         _negationOperations = Operations(
             1,
@@ -215,10 +199,6 @@ contract NegationOperationsController is Test, LayerCakeTools {
             destinationBp1,
             destinationBp1, // destinationUser1
             block.timestamp,
-            0,
-            "",
-            false,
-            0,
             destinationBp1, // negatedBandwidthProvider: originBp1
             true, // initialNegation == true
             _invalidExecutionId
@@ -227,7 +207,7 @@ contract NegationOperationsController is Test, LayerCakeTools {
         vm.recordLogs();
         // Store the negation operations
         BandwidthProviderController(destinationBp1).storeNegationOperations(
-            c.destinationToken(), c.destinationLayercake(), _negationOperations
+            c.destinationToken(), c.destinationLayercake(), _negationOperations, _invalidExecutionProof
         );
         Vm.Log[] memory entries = vm.getRecordedLogs();
         assertGt(entries.length, 0);
@@ -236,7 +216,7 @@ contract NegationOperationsController is Test, LayerCakeTools {
         _negationOperations.amount = operations.amount;
 
         // Check that the BP is marked as negated
-        (bool negated,,,,,,,) = destinationBandwidthManager.bpInfo(_negationOperations.negatedBandwidthProvider);
+        (bool negated,,,,,,,) = c.destinationLayercake().bpInfo(_negationOperations.negatedBandwidthProvider);
         assertTrue(negated);
     }
 

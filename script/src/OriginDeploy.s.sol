@@ -37,12 +37,14 @@ contract OriginDeploy is Test, Script, LayerCakeDeployTools, LayerCakeTools {
 
         vm.startBroadcast(deployerPrivateKey);
 
+        (,,,,,, uint256 depositCap,,,,,) = originLayercake.params();
+
         // Create LayerCakeOriginDeploy contract
         originDeploy = new LayerCakeOriginDeploy(
             address(originLayercake), 
             address(originLayercake.token()), 
             depositWindow,
-            originLayercake.depositCap());
+            depositCap);
 
         string memory path = ".env";
         vm.writeLine(

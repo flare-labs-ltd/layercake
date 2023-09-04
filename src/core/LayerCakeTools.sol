@@ -4,9 +4,7 @@
 
 pragma solidity 0.8.19;
 
-import "./LayerCakeExecutionProof.sol";
-
-contract LayerCakeTools is LayerCakeExecutionProof {
+contract LayerCakeTools {
     // =================================================================================
     // STRUCTS
     // =================================================================================
@@ -19,11 +17,49 @@ contract LayerCakeTools is LayerCakeExecutionProof {
         uint256 contractId;
         address tokenAddress;
         uint256 depositCap;
+        uint256 maxBandwidthMultiple;
+        uint256 negationRewardMultiple;
         uint256 reorgAssumption;
         uint256 bandwidthDepositDenominator;
         uint256 minBandwidth;
-        address forwardedFeeRecipient;
-        uint256 forwardedFeeDenominator;
+    }
+
+    struct Execution {
+        bool prepared;
+        uint256 totalPrepared;
+        uint256 feeIncrease;
+        uint256 feesPaid;
+    }
+
+    struct Operations {
+        uint256 nonce;
+        uint256 amount;
+        uint256 fee;
+        address sender;
+        address recipient;
+        uint256 executionTime;
+        address negatedBandwidthProvider;
+        bool initialNegation;
+        bytes32 invalidExecutionProofId;
+    }
+
+    struct ExecutionProof {
+        Operations operations;
+        uint256 partialAmount;
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+    }
+
+    struct BandwidthProvider {
+        bool negated;
+        uint256 startTime;
+        uint256 timeLastActive;
+        uint256 timeLastNegated;
+        uint256 negationCounter;
+        bytes32 prevInvalidExecutionProofId;
+        uint256 currentTotalBandwidth;
+        uint256 currentUsedBandwidth;
     }
 
     // =================================================================================
@@ -35,6 +71,10 @@ contract LayerCakeTools is LayerCakeExecutionProof {
     event OperationsExecuted(
         bytes32 executionId, address bandwidthProvider, ExecutionProof executionProof, bool executionPrepared
     );
+
+    event NegationStored(address bandwidthProvider, ExecutionProof invalidExecutionProof);
+
+    event NegationExecuted(address bandwidthProvider, ExecutionProof invalidExecutionProof);
 
     event BandwidthChanged(address bandwidthProvider, bool added, uint256 amount);
 
@@ -62,6 +102,7 @@ contract LayerCakeTools is LayerCakeExecutionProof {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 prefixedHashMessage = keccak256(abi.encodePacked(prefix, hash));
         address signer = ecrecover(prefixedHashMessage, executionProof.v, executionProof.r, executionProof.s);
+        require(signer != address(0), "RS1");
         return signer;
     }
 }

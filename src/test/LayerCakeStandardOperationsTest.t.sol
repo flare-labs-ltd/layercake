@@ -37,16 +37,6 @@ contract LayerCakeStandardOperationsTest is Test, LayerCakeTools {
         s.fuzzStandardOperationsTransferOnly(_amount);
     }
 
-    function testStandardOperationsTransferWithCalldata() public {
-        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
-        s.standardOperationsTransferWithCalldata(1);
-    }
-
-    function testCancelStandardOperationsTransferOnly() public {
-        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
-        s.cancelStandardOperationsTransferOnly(1);
-    }
-
     function testFailStandardOperationsBandwidthExhausted() public {
         vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         for (uint256 i = 1; i <= 11; i++) {
@@ -76,19 +66,5 @@ contract LayerCakeStandardOperationsTest is Test, LayerCakeTools {
         for (uint256 i = 1; i < partialDenominator; i++) {
             s.standardOperationsTransferOnlyPartial(i, partialDenominator);
         }
-    }
-
-    function testStandardOperationsTransferOnlyStorageSlotNotCreated() public {
-        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
-        s.standardOperationsTransferOnly(1);
-        vm.warp(c.deployTimestamp() + 364 days);
-        s.standardOperationsTransferOnly(2);
-    }
-
-    function testStandardOperationsTransferOnlyStorageSlotCreated() public {
-        vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
-        s.standardOperationsTransferOnly(1);
-        vm.warp(c.deployTimestamp() + 365 days);
-        s.standardOperationsTransferOnly(2);
     }
 }

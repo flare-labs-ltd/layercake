@@ -39,11 +39,11 @@ contract DestinationLayerCake is Test, Script, LayerCakeTools {
             vm.envUint("CONTRACT_ID"),
             address(destinationToken),
             vm.envUint("DEPOSIT_CAP") * 1 ether,
+            vm.envUint("MAX_BANDWIDTH_MULTIPLE"),
+            vm.envUint("NEGATION_REWARD_MULTIPLE"),
             vm.envUint("REORG_ASSUMPTION") * 1 minutes,
             vm.envUint("BANDWIDTH_DEPOSIT_DENOMINATOR"),
-            vm.envUint("MIN_BANDWIDTH") * 1 ether,
-            vm.envAddress("DESTINATION_FORWARDED_FEE_RECIPIENT"),
-            vm.envUint("FORWARDED_FEE_DENOMINATOR")
+            vm.envUint("MIN_BANDWIDTH") * 1 ether
         );
 
         vm.startBroadcast(deployerPrivateKey);

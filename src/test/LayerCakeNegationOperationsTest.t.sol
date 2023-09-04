@@ -32,7 +32,8 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
         // Send 10,000 destinationToken to destinationBp1 without a corresponding storage
         // of operations on origin_chain
         (bytes32 invalidExecutionId, ExecutionProof memory invalidExecutionProof) = n.createInvalidExecution();
-        Operations memory negationOperations = n.storeInitialNegationOperations(invalidExecutionId);
+        Operations memory negationOperations =
+            n.storeInitialNegationOperations(invalidExecutionId, invalidExecutionProof);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 1);
         assertEq(
             c.originToken().balanceOf(negationOperations.recipient), negationOperations.amount - negationOperations.fee
@@ -46,7 +47,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
     function testFailInvalidNegation() public {
         vm.warp(c.deployTimestamp());
         (bytes32 validExecutionId, ExecutionProof memory validExecutionProof) = n.createValidExecution();
-        Operations memory negationOperations = n.storeInitialNegationOperations(validExecutionId);
+        Operations memory negationOperations = n.storeInitialNegationOperations(validExecutionId, validExecutionProof);
         // This negation execution will fail due to:
         // require(_negationExecutionProof.operations.initialNegation != executionValidity, "ENO3");
         n.executeValidNegationOperations(validExecutionProof, negationOperations, 1);
@@ -55,8 +56,8 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
     function testReverseInvalidNegation() public {
         vm.warp(c.deployTimestamp() + (4 * c.reorgAssumption()));
         (bytes32 validExecutionId, ExecutionProof memory validExecutionProof) = n.createValidExecution();
-        n.storeInitialNegationOperations(validExecutionId);
-        Operations memory negationOperations = n.storeReverseNegationOperations(validExecutionId);
+        n.storeInitialNegationOperations(validExecutionId, validExecutionProof);
+        Operations memory negationOperations = n.storeReverseNegationOperations(validExecutionId, validExecutionProof);
         n.executeValidNegationOperations(validExecutionProof, negationOperations, 2);
         vm.warp(c.deployTimestamp() + (6 * c.reorgAssumption()));
         n.executeValidNegationOperations(validExecutionProof, negationOperations, 2);
@@ -84,7 +85,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
             n.createInvalidExecutionRemoveAllBandwidth();
         // The BP takes out its 100,000 bandwidth with an invalid execution
         assertEq(c.destinationToken().balanceOf(destinationBp1), 990000);
-        Operations memory negationOperations = n.storeSelfNegationOperations(invalidExecutionId);
+        Operations memory negationOperations = n.storeSelfNegationOperations(invalidExecutionId, invalidExecutionProof);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
         vm.warp(c.deployTimestamp() + 4 * c.reorgAssumption());
         assertEq(c.originToken().balanceOf(destinationBp1), 0);
@@ -108,7 +109,7 @@ contract LayerCakeNegationOperationsTest is Test, LayerCakeTools {
             n.createInvalidExecutionRemoveAllBandwidth();
         // The BP takes out its 100,000 bandwidth with an invalid execution
         assertEq(c.destinationToken().balanceOf(destinationBp1), 990000);
-        Operations memory negationOperations = n.storeSelfNegationOperations(invalidExecutionId);
+        Operations memory negationOperations = n.storeSelfNegationOperations(invalidExecutionId, invalidExecutionProof);
         n.executeValidNegationOperations(invalidExecutionProof, negationOperations, 2);
         vm.warp(c.deployTimestamp() + 2 * c.reorgAssumption());
         assertEq(c.originToken().balanceOf(destinationBp1), 0);
