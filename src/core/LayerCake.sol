@@ -157,8 +157,11 @@ contract LayerCake is LayerCakeTools {
         ExecutionProof memory invalidExecutionProof
     ) external {
         require(negationExecutionProof.operations.negatedBandwidthProvider != address(0), "ENO1");
-        bytes32 invalidExecutionProofId = getInvalidExecutionProofId(invalidExecutionProof);
-        require(invalidExecutionProofId == negationExecutionProof.operations.invalidExecutionProofId, "ENO2");
+        require(
+            getInvalidExecutionProofId(invalidExecutionProof)
+                == negationExecutionProof.operations.invalidExecutionProofId,
+            "ENO2"
+        );
         bytes32 invalidExecutionId = getExecutionId(departingPathwayId, invalidExecutionProof.operations);
         require(
             negationExecutionProof.operations.initialNegation

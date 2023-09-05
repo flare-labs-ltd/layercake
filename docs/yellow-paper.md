@@ -109,7 +109,7 @@ sequenceDiagram
     participant LayerCakeDestination
     participant Recipient
     Sender->>LayerCakeOrigin: storeStandardOperations(<br />operations);
-    LayerCakeOrigin-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />uint256 operations);
+    LayerCakeOrigin-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />Operations operations);
     BandwidthProvider->>LayerCakeDestination: executeStandardOperations(<br />executionProof)
     activate LayerCakeDestination
     LayerCakeDestination->>Recipient: transfer(<br />recipient,<br />amount)
@@ -168,6 +168,46 @@ storedExecutionIds[executionId]
 
 must return true.
 
+#### Prove Bandwidth
+
+Bandwidth in LayerCake is recycled every `bandwidthPeriod` time `T`, e.g. 12 hours. This means that a bandwidth provider with a bandwidth `B` may call `executeStandardOperations()` up to `B` amount of tokens per time `T`.
+
+* `reorgAssumption`: This is the elapsed time that the origin chain or destination chain are safely assumed to not encounter a block reorg where a deposit disapears. Up to this amount of time, a reorg which causes a user deposit to disappear on the origin chain would exactly match the scenario where a bandwidth provider executes an invalid call to `executeOperations()` on the destination chain. The bandwidth providers are the entities that assume the risk of reorgs, and this is part of what they will base their fee on. Note that if a bandwidth provider operates a risky strategy of not requiring sufficient confirmations on a set of stored operations, then they are open to an incentivised scenario of being negated given stored operations being purposefully made to disappear via a network reorg.
+* `bandwidthPeriod`: The length of time after which a bandwidth provider's bandwidth refreshes back to their full amount. It is set to be equal to `2*reorgAssumption`.
+
+```mermaid
+sequenceDiagram
+    participant BandwidthProvider
+    participant LayerCake
+    Note over BandwidthProvider,LayerCake: B units of bandwidth per time T
+    BandwidthProvider->>LayerCake: executeStandardOperations(U <= B)
+    Note over BandwidthProvider,LayerCake: Remaining bandwidth is B* = B - U
+    BandwidthProvider->>LayerCake: executeStandardOperations(U* <= B*)
+    Note over BandwidthProvider,LayerCake: Each passage of time T<br />resets bandwidth back to B
+```
+
+If a new bandwidth period begins, and a bandwidth provider is reserving an amount of bandwidth that when added to their bandwidth used in the previous bandwidth period is greater than `B`, then it's required that their time last active is greater than `reorgAssumption` time `R`, e.g. 6 hours.
+
+```solidity
+// New bandwidth period
+if (
+    bp.currentUsedBandwidth > bp.currentTotalBandwidth
+        || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth
+) {
+    require(block.timestamp - bp.timeLastActive > params.reorgAssumption, "PB3");
+}
+```
+
+This prevents the ability for a bandwidth provider to incorrectly call `executeStandardOperations()` for an amount up to `B` at the end of the bandwidth period and to then call `executeStandardOperations()` again at the beginning of the next bandwidth period for another amount `B`, i.e. executing `2B` when their bandwidth is just `B`.
+
+```solidity
+function _proveBandwidth(address bandwidthProvider, uint256 amount, uint256 setting) private 
+```
+
+The total set of checks performed during the call to `proveBandwidth()` during the call to `executeOperations()` are:
+* Require that the bandwidth provider is not currently negated and that they haven't been made positive in the past `bandwidthPeriod` time.
+* The bandwidth provider should have available bandwidth greater than or equal to `partialAmount`.
+
 #### Bandwidth Negation
 
 In order to complete the insurance proving system, a concept called _negation_ is introduced. When a bandwidth provider issues an invalid execution on a chain, anyone may compete to call `storeNegationOperations()` on that chain. This sets the bandwidth provider's bandwidth amount to be multiplied by -1, effectively causing it to have no available bandwidth in the system while it remains negative.
@@ -183,7 +223,7 @@ This call to `storeNegationOperations()` deposits `defaultNegationCost` tokens f
 
 `negationRewardDenominator` is equal to `negationRewardMultiple * bandwidthDepositDenominator`, i.e. if the bandwidth deposit percentage is 10% of the total added bandwidth and `negationRewardMultiple == 10`, then the negation reward percentage is 1% of the total negated bandwidth.
 
-The amount of tokens `bp.currentTotalBandwidth/negationRewardDenominator` used as the reward here is drawn from the deposited `bandwidthAmount + bandwidthAmount/bandwidthDepositDenominator` described above where a bandwidth provider only has access to `bandwidthAmount` tokens each `bandwidthPeriod` amount of time, and is assumed to have incorrectly spent `bandwidthAmount` tokens such that the remaining amount of `bandwidthAmount` tokens are used for the negation reward. 
+The amount of tokens `bp.currentTotalBandwidth/negationRewardDenominator` used as the reward here is drawn from the deposited `bandwidthAmount + bandwidthAmount/bandwidthDepositDenominator` described above where a bandwidth provider only has access to `bandwidthAmount` tokens each `bandwidthPeriod` amount of time, and is assumed to have incorrectly spent `bandwidthAmount` tokens such that the remaining amount of `bandwidthAmount/bandwidthDepositDenominator` tokens are available for the negation reward. 
 
 ```solidity
 function executeNegationOperations(
@@ -195,8 +235,11 @@ function executeNegationOperations(
 In the above call to `executeNegationOperations()`, `negationExecutionProof` is the set of operations that were stored in the call to `storeNegationOperations()`, and `invalidExecutionProof` is the full invalid execution proof signed by the negated bandwidth provider. 
 
 ```solidity
-bytes32 invalidExecutionProofId = getInvalidExecutionProofId(invalidExecutionProof);
-require(invalidExecutionProofId == negationExecutionProof.operations.invalidExecutionProofId, "ENO2");
+require(
+    getInvalidExecutionProofId(invalidExecutionProof)
+        == negationExecutionProof.operations.invalidExecutionProofId,
+    "ENO2"
+);
 bytes32 invalidExecutionId = getExecutionId(departingPathwayId, invalidExecutionProof.operations);
 require(
     negationExecutionProof.operations.initialNegation
@@ -230,7 +273,7 @@ sequenceDiagram
     activate LayerCakeDestination
     LayerCakeDestination->>LayerCakeDestination: faultyBandwidthProvider<br />negated
     deactivate LayerCakeDestination
-    LayerCakeDestination-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />uint256 operations);
+    LayerCakeDestination-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />Operations operations);
     BandwidthProvider->>LayerCakeOrigin: executeNegationOperations(<br />negationExecutionProof, <br />invalidExecutionProof)
     activate LayerCakeOrigin
     LayerCakeOrigin->>Recipient: transfer(<br />recipient,<br />defaultNegationCost +<br />faultyBp.currentTotalBandwidth/<br />negationRewardDenominator)
@@ -244,7 +287,7 @@ To reverse the negation, the bandwidth provider can also call `storeNegationOper
 
 Note that the pair of calls to first store a negation that makes bandwidth negative and then positive must be linked by referencing the same `invalidExecutionProofId`. This is to ensure that there will always be exactly one of these calls that is valid. Otherwise, the second call to reverse a negation could reference any valid execution proof instead of the one that was presented in the initial negation that preceeded it.
 
-If the bandwidth provider reversed a negation as described above, but they reference an `invalidExecutionProofId` that is actually invalid, then they lose their deposited `amount = negatedBandwidthProvider.currentTotalBandwidth` that they sent to reverse the negation because the corresponding call to `executeNegationOperations()` on the opposite chain will fail. This effectively burns most of their deposit of `negatedBandwidthProvider.currentTotalBandwidth` because it is deposited to the system without a valid corresponding execution. `negatedBandwidthProvider.currentTotalBandwidth/negationRewardDenominator` is left in the system as the reward for the next negation that is initiated against this bandwidth provider.
+If the bandwidth provider reversed a negation as described above, but they reference an `invalidExecutionProofId` that is actually invalid, then they lose their deposited `amount = negatedBandwidthProvider.currentTotalBandwidth` that they sent to reverse the negation because the corresponding call to `executeNegationOperations()` on the opposite chain will fail.
 
 The successive calls to `storeNegationOperations()` are always earning money for the sender that is actually correct with a claim about an `invalidExecutionProof` being valid or invalid. Thus, if a bandwidth provider is continually negated when they have not performed any invalid actions, they are repeatedly going to earn `defaultNegationCost`. 
 
@@ -263,7 +306,7 @@ The following table shows the economic results of an attack by a bandwidth provi
 | executeStandardOperations $(B)_x^!$   | $x \rightarrow +B$                        | Invalid execution again. The negation counter is reset to zero, and negations cost $\mu$ tokens again. |
 | negateBp $(x, \mu)_y^*$       | $y \rightarrow +0.01B$                    | Since the negation counter was reset to zero, $x$ is validly negated again for a cost of $\mu$ tokens which are returned to $y$ along with the reward of $0.01B$ tokens. The security assumption remains that some $y$ can negate $x$ within one `reorgAssumption` amount of time after an invalid execution by $x$.
 |                               | **Totals**                                |
-|                               | $x \rightarrow -1.1B$                     | The scheme by $x$ was unprofitable and lost $1.1B$ tokens
+|                               | $x \rightarrow -1.1B$                     | The attack by $x$ was unprofitable and lost $1.1B$ tokens
 |                               | $y \rightarrow +0.03B$                    | $y$ earned a reward of $0.03B$ for negating $x$, and in the worst case where $x==y$, the scheme by $x$ remains unprofitable by losing $1.07B$.
 |                               | $c \rightarrow +1.07B$ (overcollaterised) | The LayerCake contract, $c$, retains the balance of tokens, and is in effect overcollateralised with an additional $1.07B$ tokens that can no longer be removed from the system through any executions by $x$ since it is negated. 
 
@@ -281,46 +324,6 @@ If $x$ continues the attack from here, the economic outcome becomes even worse f
 |                               | $y \rightarrow +0.05B$                    | It can be seen that the rate of increase of loss by $x$ is outpacing the rate of increase of return by $y$, which is an important property assuming the worst case where $x==y$.|
 |                               | $c \rightarrow +2.05B$ (overcollaterised) | |
 
-Bandwidth in LayerCake is recycled every `bandwidthPeriod` time `T`, e.g. 12 hours. This means that a bandwidth provider with a bandwidth `B` may call `executeStandardOperations()` up to `B` amount of tokens per time `T`.
-
-* `reorgAssumption`: This is the elapsed time that the origin chain or destination chain are safely assumed to not encounter a block reorg where a deposit disapears. Up to this amount of time, a reorg which causes a user deposit to disappear on the origin chain would exactly match the scenario where a bandwidth provider executes an invalid call to `executeOperations()` on the destination chain. The bandwidth providers are the entities that assume the risk of reorgs, and this is part of what they will base their fee on. Note that if a bandwidth provider operates a risky strategy of not requiring sufficient confirmations on a set of stored operations, then they are open to an incentivised scenario of being negated given stored operations being purposefully made to disappear via a network reorg.
-* `bandwidthPeriod`: The length of time after which a bandwidth provider's bandwidth refreshes back to their full amount. It is set to be equal to `2*reorgAssumption`.
-
-```mermaid
-sequenceDiagram
-    participant BandwidthProvider
-    participant LayerCake
-    Note over BandwidthProvider,LayerCake: B units of bandwidth per time T
-    BandwidthProvider->>LayerCake: executeStandardOperations(U <= B)
-    Note over BandwidthProvider,LayerCake: Remaining bandwidth is B* = B - U
-    BandwidthProvider->>LayerCake: executeStandardOperations(U* <= B*)
-    Note over BandwidthProvider,LayerCake: Each passage of time T<br />resets bandwidth back to B
-```
-
-If a new bandwidth period begins, and a bandwidth provider is reserving an amount of bandwidth that when added to their bandwidth used in the previous bandwidth period is greater than `B`, then it's required that their time last active is greater than `reorgAssumption` time `R`, e.g. 6 hours.
-
-```solidity
-// New bandwidth period
-if (
-    bp.currentUsedBandwidth > bp.currentTotalBandwidth
-        || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth
-) {
-    require(block.timestamp - bp.timeLastActive > params.reorgAssumption, "PB3");
-}
-```
-
-This prevents the ability for a bandwidth provider to incorrectly call `executeStandardOperations()` for an amount up to `B` at the end of the bandwidth period and to then call `executeStandardOperations()` again at the beginning of the next bandwidth period for another amount `B`, i.e. executing `2B` when their bandwidth is just `B`.
-
-#### Prove Bandwidth
-
-```solidity
-function _proveBandwidth(address bandwidthProvider, uint256 amount, uint256 setting) private 
-```
-
-In summary the total set of checks performed during the call to `proveBandwidth()` during the call to `executeOperations()` are:
-* Require that the bandwidth provider is not currently negated and that they haven't been made positive in the past `bandwidthPeriod` time.
-* The bandwidth provider should have available bandwidth greater than or equal to `partialAmount`.
-
 ## Verified Setup of LayerCake Contracts
 
 The method for deploying the LayerCake contracts in a verified manner is as follows:
@@ -330,7 +333,7 @@ The method for deploying the LayerCake contracts in a verified manner is as foll
 2) For a period of time `depositWindow`, e.g. 7 days, anyone may deposit origin-side tokens to the LayerCakeOriginDeploy contract using the `deposit()` function.
     1) Depositors are also free to withdraw their tokens during this time.
     2) Each deposit or withdraw updates the value of a stored variable `verificationHash`, which is used to identify the final set of balance changing transactions that took place on this contract.
-3) Once the `_depositWindow` time elapses, anyone may call the function `deployLayerCake()`, which deploys a new LayerCake contract on the origin-side, and sends the balance of the origin-side token to it. 
+3) Once the `depositWindow` time elapses, anyone may call the function `transferDepositsToLayerCake()`, which sends the deposits to a deployed LayerCake contract.
 
 ### Destination-Side
 1) The LayerCakeDestinationDeploy contract is deployed by anyone, with a matching set of LayerCake deployment parameters `deployParams` that were used for LayerCakeOriginDeploy. LayerCakeDestinationDeploy is also constructed with the corresponding values of `verificationHash` and `depositedAmount` from the origin-side.
