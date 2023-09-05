@@ -2,7 +2,6 @@ use self::bandwidth_provider;
 use self::models::*;
 use self::schema::latestblocknumber::dsl::*;
 use ::layer_cake::*;
-use ::layer_cake_bandwidth_manager::*;
 use chrono::prelude::*;
 use diesel::prelude::*;
 use dotenvy::dotenv;
@@ -57,18 +56,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let lc_address: Address = lc_address_raw.parse()?;
     let lc_contract: layer_cake::LayerCake<&Provider<Http>> =
         layer_cake::LayerCake::new(lc_address, Arc::new(&rpc_provider));
-    let lcbm_address: Address;
-    if let Ok(result) = &lc_contract.bandwidth_manager().call().await {
-        lcbm_address = *result;
-        println!("bandwidthManager is {lcbm_address:?}");
-    } else {
-        panic!("bandwidthManager not found.")
-    }
-    let lcbm_contract: layer_cake_bandwidth_manager::LayerCakeBandwidthManager<&Provider<Http>> =
-        layer_cake_bandwidth_manager::LayerCakeBandwidthManager::new(
-            lcbm_address,
-            Arc::new(&rpc_provider),
-        );
     let mut initialized: bool = false;
     loop {
         match filter_bandwidth_provider_events(
@@ -78,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             &rpc_filter_depth,
             &explorer_tx_endpoint,
             &lc_address,
-            &lcbm_contract,
+            &lc_contract,
         )
         .await
         {
@@ -102,7 +89,7 @@ async fn filter_bandwidth_provider_events(
     rpc_filter_depth: &U64,
     explorer_tx_endpoint: &str,
     lc_address: &Address,
-    lcbm_contract: &LayerCakeBandwidthManager<&Provider<Http>>,
+    lc_contract: &LayerCake<&Provider<Http>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let block_number_max: U64 = rpc_provider.get_block_number().await?;
     let connection: &mut PgConnection = &mut establish_connection();
@@ -159,8 +146,7 @@ async fn filter_bandwidth_provider_events(
                         println!(
                                 "\x1b[32mBandwidthChanged: {bandwidth_provider_string}, {added}, {amount}\x1b[0m"
                             );
-                        set_bp_info(lcbm_contract, connection, is_origin, &bandwidth_provider)
-                            .await;
+                        set_bp_info(lc_contract, connection, is_origin, &bandwidth_provider).await;
                     }
                     LayerCakeEvents::OperationsExecutedFilter(result) => {
                         let tx_hash: String = format!("{:#x}", log.transaction_hash.unwrap());
@@ -200,8 +186,7 @@ async fn filter_bandwidth_provider_events(
                             &execution_proof,
                         )
                         .await;
-                        set_bp_info(lcbm_contract, connection, is_origin, &bandwidth_provider)
-                            .await;
+                        set_bp_info(lc_contract, connection, is_origin, &bandwidth_provider).await;
                     }
                     LayerCakeEvents::OperationsStoredFilter(result) => {
                         let tx_hash: String = format!("{:#x}", log.transaction_hash.unwrap());
@@ -236,6 +221,8 @@ async fn filter_bandwidth_provider_events(
                             .await?;
                         }
                     }
+                    LayerCakeEvents::NegationStoredFilter(_result) => {}
+                    LayerCakeEvents::NegationExecutedFilter(_result) => {}
                 },
                 Err(err) => {
                     println!("error decoding layercake log: {}", err);
@@ -260,13 +247,13 @@ async fn filter_bandwidth_provider_events(
 }
 
 async fn set_bp_info(
-    lcbm_contract: &LayerCakeBandwidthManager<&Provider<Http>>,
+    lc_contract: &LayerCake<&Provider<Http>>,
     connection: &mut PgConnection,
     is_origin: &bool,
     bandwidth_provider: &Address,
 ) {
     // Get BP Info
-    match &lcbm_contract.bp_info(*bandwidth_provider).call().await {
+    match &lc_contract.bp_info(*bandwidth_provider).call().await {
         Ok(bandwidth_provider_info) => {
             println!("\tnegated: {}", &bandwidth_provider_info.0);
             println!("\tstartTime: {}", &bandwidth_provider_info.1);
@@ -340,13 +327,6 @@ async fn write_execute_standard_operations(
         &execution_proof.operations.sender.to_string(),
         &execution_proof.operations.recipient.to_string(),
         &execution_proof.operations.execution_time.to_string(),
-        &execution_proof.operations.call_data_gas_limit.to_string(),
-        &execution_proof.operations.call_data.to_string(),
-        &execution_proof.operations.cancel,
-        &execution_proof
-            .operations
-            .cancellation_fee_refund
-            .to_string(),
         &execution_proof
             .operations
             .negated_bandwidth_provider
@@ -388,10 +368,6 @@ async fn write_store_standard_operations(
         &operations.sender.to_string(),
         &operations.recipient.to_string(),
         &operations.execution_time.to_string(),
-        &operations.call_data_gas_limit.to_string(),
-        &operations.call_data.to_string(),
-        &operations.cancel,
-        &operations.cancellation_fee_refund.to_string(),
         &operations.negated_bandwidth_provider.to_string(),
         &operations.initial_negation,
         &Bytes::from(operations.invalid_execution_proof_id.to_vec()).to_string(),
