@@ -161,10 +161,13 @@ contract LayerCake is LayerCakeTools {
         bytes32 invalidExecutionProofId = getInvalidExecutionProofId(invalidExecutionProof);
         require(invalidExecutionProofId == negationExecutionProof.operations.invalidExecutionProofId, "ENO2");
         bytes32 invalidExecutionId = getExecutionId(departingPathwayId, invalidExecutionProof.operations);
-        bool executionValidity = getExecutionValidity(
-            negationExecutionProof.operations.negatedBandwidthProvider, invalidExecutionId, invalidExecutionProof
+        require(
+            negationExecutionProof.operations.initialNegation
+                != getExecutionValidity(
+                    negationExecutionProof.operations.negatedBandwidthProvider, invalidExecutionId, invalidExecutionProof
+                ),
+            "ENO3"
         );
-        require(negationExecutionProof.operations.initialNegation != executionValidity, "ENO3");
         (, bool executionPrepared) = _executeOperations(negationExecutionProof);
         if (!executionPrepared) {
             return;
