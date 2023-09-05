@@ -129,12 +129,11 @@ contract LayerCake is LayerCakeTools {
         emit BandwidthChanged(msg.sender, false, bandwidthAmount);
     }
 
-    function increaseFee(bytes32 executionId, uint256 executionTime, uint256 addedFee) external {
-        require(block.timestamp >= executionTime, "IF1");
+    function increaseFee(bytes32 executionId, uint256 addedFee) external {
         uint256 currentBalance = token.balanceOf(address(this));
         token.safeTransferFrom(msg.sender, address(this), addedFee);
         addedFee = token.balanceOf(address(this)) - currentBalance;
-        require(token.balanceOf(address(this)) <= params.depositCap, "IF3");
+        require(token.balanceOf(address(this)) <= params.depositCap, "IF1");
         preparedExecutionIds[executionId].feeIncrease = preparedExecutionIds[executionId].feeIncrease + addedFee;
     }
 

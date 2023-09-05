@@ -23,7 +23,7 @@ The `storeStandardOperations()` function is the primary function that users will
 function storeStandardOperations(Operations memory operations) external
 ```
 
-Users deposit an `amount` of ERC20 tokens, up to `depositCap` total tokens stored on the LayerCake contract, and specify a `recipient` for the tokens. The `nonce` field is used to make the transaction have a unique identifier in the LayerCake contract storage, and in practice is the current nanoseconds timestamp taken client-side by the user. The `fee` field is the amount of tokens that will be delivered to the bandwidth provider that fulfills this deposit request on the destination chain. The value of `executionTime` is set to `block.timestamp` within the call to `storeStandardOperations()` and represents the earliest time that the `_operations` can be executed on the opposite chain.
+Users deposit an `amount` of ERC20 tokens, up to `depositCap` total tokens stored on the LayerCake contract, and specify a `recipient` for the tokens. The `nonce` field is used to make the transaction have a unique identifier in the LayerCake contract storage, and in practice is the current nanoseconds timestamp taken client-side by the user. The `fee` field is the amount of tokens that will be delivered to the bandwidth provider that fulfills this deposit request on the destination chain. The value of `executionTime` is set to `block.timestamp` within the call to `storeStandardOperations()` and represents the earliest time that the `operations` can be executed on the opposite chain.
 
 ```solidity
 struct Operations {
@@ -48,7 +48,11 @@ bytes32 executionId = getExecutionId(departingPathwayId, operations);
 Where `departingPathwayId` is defined as:
 
 ```solidity
-bytes32 public immutable departingPathwayId = getPathwayId(_thisChainId, _oppositeChainId, _assetId, _contractId);
+bytes32 public immutable departingPathwayId = keccak256(
+    abi.encode(
+        "layercakePathwayId", params.thisChainId, params.oppositeChainId, params.assetId, params.contractId
+    )
+);
 ```
 
 and represents a unique pathway ID from the current chain to the opposite chain for this particular asset. `_contractId` represents the fact that multiple LayerCake bridges can operate in parallel for a particular source chain, destination chain, and asset.
@@ -56,7 +60,11 @@ and represents a unique pathway ID from the current chain to the opposite chain 
 Similarly, `arrivingPathwayId` is defined as:
 
 ```solidity
-bytes32 public immutable arrivingPathwayId = getPathwayId(_oppositeChainId, _thisChainId, _assetId, _contractId);
+bytes32 public immutable arrivingPathwayId = keccak256(
+    abi.encode(
+        "layercakePathwayId", params.oppositeChainId, params.thisChainId, params.assetId, params.contractId
+    )
+);
 ```
 
 Note that on the source chain, the `departingPathwayId` equals the `arrivingPathwayId` of the destination chain and vice versa. These pathway IDs are used in order to keep the `executionId` values unique to this particular pair of LayerCake contracts so that its storage and proofs are unique to it. 
@@ -64,7 +72,7 @@ Note that on the source chain, the `departingPathwayId` equals the `arrivingPath
 Once the `executionId` is generated, it is first checked that it's unique, and it is then saved to storage using:
 
 ```solidity
-storageManager.storeExecutionId(_operations.executionTime, executionId, _operations.sender, _operations.amount);
+storedExecutionIds[executionId] = true;
 ```
 
 #### Executing Operations:
@@ -75,7 +83,7 @@ The `executeStandardOperations()` function is only permitted to be called by ban
 function executeStandardOperations(ExecutionProof memory executionProof) external
 ```
 
-The inputted fields to `executeStandardOperations()` match the corresponding call to `storeStandardOperations()` on the opposite chain plus additional fields, all contained in the `ExecutionProof memory _executionProof` struct. The `ExecutionProof` struct is defined as:
+The inputted fields to `executeStandardOperations()` match the corresponding call to `storeStandardOperations()` on the opposite chain plus additional fields, all contained in the `ExecutionProof memory executionProof` struct. The `ExecutionProof` struct is defined as:
 
 ```solidity
 struct ExecutionProof {
@@ -100,9 +108,9 @@ sequenceDiagram
     participant BandwidthProvider
     participant LayerCakeDestination
     participant Recipient
-    Sender->>LayerCakeOrigin: storeStandardOperations(<br />_operations);
+    Sender->>LayerCakeOrigin: storeStandardOperations(<br />operations);
     LayerCakeOrigin-->>BandwidthProvider: event OperationsStored(<br />bytes32 executionId,<br />uint256 operations);
-    BandwidthProvider->>LayerCakeDestination: executeStandardOperations(<br />_executionProof)
+    BandwidthProvider->>LayerCakeDestination: executeStandardOperations(<br />executionProof)
     activate LayerCakeDestination
     LayerCakeDestination->>Recipient: transfer(<br />recipient,<br />amount)
     LayerCakeDestination->>BandwidthProvider: transfer(<br />bandwidthProvider,<br />fee)
@@ -114,7 +122,7 @@ sequenceDiagram
 Users may increase their fee on the chain they are expecting to have their operations executed on by calling `increaseFee()`.
 
 ```solidity
-function increaseFee(bytes32 executionId, uint256 executionTime, uint256 addedFee) external
+function increaseFee(bytes32 executionId, uint256 addedFee) external
 ```
 
 #### Adding and Subtracting Bandwidth
@@ -125,19 +133,19 @@ Anyone may at any time add new bandwidth to the system by calling `addBandwidth(
 function addBandwidth(uint256 bandwidthAmount) external
 ```
 
-This deposits `_bandwidthAmount + _bandwidthAmount/bandwidthDepositDenominator` tokens and gives the sender `_bandwidthAmount` new bandwidth that they can start operating with after two bandwidth periods on the chain that this deposit occurs. `_bandwidthAmount/bandwidthDepositDenominator` is a deposit of tokens which are held as an incentive to leave the system in the correct manner by using the `subtractBandwidth()` function. If the bandwidth provider leaves the system in any other manner, e.g. using `executeOperations()` without a corresponding valid `storeOperations()`, then they lose this deposit. Bandwidth providers must maintain a bandwidth of between `minBandwidth` and `minBandwidth * maxBandwidthMultiple` in order to operate in the system.
+This deposits `bandwidthAmount + bandwidthAmount/bandwidthDepositDenominator` tokens and gives the sender `bandwidthAmount` new bandwidth that they can start operating with after two bandwidth periods on the chain that this deposit occurs. `bandwidthAmount/bandwidthDepositDenominator` is a deposit of tokens which are held as an incentive to leave the system in the correct manner by using the `subtractBandwidth()` function. If the bandwidth provider leaves the system in any other manner, e.g. using `executeOperations()` without a corresponding valid `storeOperations()`, then they lose this deposit. Bandwidth providers must maintain a bandwidth of between `minBandwidth` and `minBandwidth * maxBandwidthMultiple` in order to operate in the system.
 
 ```solidity
 function subtractBandwidth(uint256 bandwidthAmount) external
 ```
 
-If a bandwidth provider calls `subtractBandwidth()` for an amount `_bandwidthAmount`, then their bandwidth is first proven to be available and then spent using the same `_proveBandwidth()` function as during a call to `executeStandardOperations()`. Then the bandwidth provider's `currentTotalBandwidth` is reduced by `_bandwidthAmount` and they are sent `_bandwidthAmount + _bandwidthAmount/bandwidthDepositDenominator` tokens. 
+If a bandwidth provider calls `subtractBandwidth()` for an amount `bandwidthAmount`, then their bandwidth is first proven to be available and then spent using the same `_proveBandwidth()` function as during a call to `executeStandardOperations()`. Then the bandwidth provider's `currentTotalBandwidth` is reduced by `bandwidthAmount` and they are sent `bandwidthAmount + bandwidthAmount/bandwidthDepositDenominator` tokens. 
 
-The storing of `_bandwidthAmount + _bandwidthAmount/bandwidthDepositDenominator` tokens while only being permitted to access `_bandwidthAmount` tokens per `bandwidthPeriod` time is done in order to reward bandwidth _negation_, which is a way to remove faulty bandwidth providers from the system, described in a later section below.
+The storing of `bandwidthAmount + bandwidthAmount/bandwidthDepositDenominator` tokens while only being permitted to access `bandwidthAmount` tokens per `bandwidthPeriod` time is done in order to reward bandwidth _negation_, which is a way to remove faulty bandwidth providers from the system, described in a later section below.
 
 #### Proof Function:
 
-The validity of a call to `_executeOperations()` can be checked on the opposite chain by calling `getExecutionValidity()` with the signed `_executionProof` that the bandwidth provider would have had to sign to perform the execution call.
+The validity of a call to `_executeOperations()` can be checked on the opposite chain by calling `getExecutionValidity()` with the signed `executionProof` that the bandwidth provider would have had to sign to perform the execution call.
 
 ```solidity
 function getExecutionValidity(address bandwidthProvider, bytes32 executionId, ExecutionProof memory executionProof)
@@ -318,18 +326,18 @@ In summary the total set of checks performed during the call to `proveBandwidth(
 The method for deploying the LayerCake contracts in a verified manner is as follows:
 
 ### Origin-Side
-1) The LayerCakeOriginDeploy contract is deployed, with a set of LayerCake deployment parameters `_deployParams`. 
-2) For a period of time `_depositWindow`, e.g. 7 days, anyone may deposit origin-side tokens to the LayerCakeOriginDeploy contract using the `deposit()` function.
+1) The LayerCakeOriginDeploy contract is deployed, with a set of LayerCake deployment parameters `deployParams`. 
+2) For a period of time `depositWindow`, e.g. 7 days, anyone may deposit origin-side tokens to the LayerCakeOriginDeploy contract using the `deposit()` function.
     1) Depositors are also free to withdraw their tokens during this time.
     2) Each deposit or withdraw updates the value of a stored variable `verificationHash`, which is used to identify the final set of balance changing transactions that took place on this contract.
 3) Once the `_depositWindow` time elapses, anyone may call the function `deployLayerCake()`, which deploys a new LayerCake contract on the origin-side, and sends the balance of the origin-side token to it. 
 
 ### Destination-Side
-1) The LayerCakeDestinationDeploy contract is deployed by anyone, with a matching set of LayerCake deployment parameters `_deployParams` that were used for LayerCakeOriginDeploy. LayerCakeDestinationDeploy is also constructed with the corresponding values of `verificationHash` and `_depositedAmount` from the origin-side.
-    1) As part of the construction, the destination-side LayerCake and LayerCakeTransportedToken contracts are automatically deployed, and the LayerCake contract receives `depositCap - _depositedAmount` amount of the LayerCakeTransportedToken.
+1) The LayerCakeDestinationDeploy contract is deployed by anyone, with a matching set of LayerCake deployment parameters `deployParams` that were used for LayerCakeOriginDeploy. LayerCakeDestinationDeploy is also constructed with the corresponding values of `verificationHash` and `depositedAmount` from the origin-side.
+    1) As part of the construction, the destination-side LayerCake and LayerCakeTransportedToken contracts are automatically deployed, and the LayerCake contract receives `depositCap - depositedAmount` amount of the LayerCakeTransportedToken.
 2) The deployer then replays all of the balance changing transactions that occurred on LayerCakeOriginDeploy by calling `setBalanceChange()`, and this continually updates the value of `computedVerificationHash`.
 3) At the moment that `computedVerificationHash == verificationHash`, the deployer may no longer call `setBalanceChange()`, and the LayerCakeDestinationDeploy contract is marked as `deployed == true`.
-4) Anyone may verify the construction of the pair of LayerCake contracts on the origin-side and destination-side by comparing their `_deployParams` and `verificationHash` values. 
+4) Anyone may verify the construction of the pair of LayerCake contracts on the origin-side and destination-side by comparing their `deployParams` and `verificationHash` values. 
 5) With `deployed == true`, the origin-side depositors may now call `withdraw()` to retrieve their balance of LayerCakeTransportedToken.
 
 This setup creates a way to have an initial set of LayerCakeTransportedToken token holders that can then call `addBandwidth()` on the destination-side to create new bandwidth providers. Similarly, anyone may call `addBandwidth()` on the origin-side to create new origin-side bandwidth providers.
