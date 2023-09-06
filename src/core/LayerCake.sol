@@ -166,7 +166,7 @@ contract LayerCake is LayerCakeTools {
         );
     }
 
-    /// @notice Insurance mechanism of LayerCake on the chain opposite when an invalid execution occurred.
+    /// @notice Insurance mechanism of LayerCake on the chain opposite where an invalid execution occurred.
     /// @dev If a bandwidth provider has their bandwidth made negative on the opposite chain, then they must be proven to have executed operations that don't exist on this chain in order for this function call to succeed.
     function executeNegationOperations(
         ExecutionProof memory negationExecutionProof,

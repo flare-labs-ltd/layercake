@@ -24,10 +24,6 @@ CREATE TABLE storestandardoperations (
   sender VARCHAR NOT NULL,
   recipient VARCHAR NOT NULL,
   executiontime VARCHAR NOT NULL,
-  calldatagaslimit VARCHAR NOT NULL,
-  bytes VARCHAR NOT NULL,
-  cancel BOOLEAN NOT NULL,
-  cancellationfeerefund VARCHAR NOT NULL,
   negatedbandwidthprovider VARCHAR NOT NULL,
   initialnegation BOOLEAN NOT NULL,
   invalidexecutionproofid VARCHAR NOT NULL
@@ -49,10 +45,6 @@ CREATE TABLE executestandardoperations (
   sender VARCHAR NOT NULL,
   recipient VARCHAR NOT NULL,
   executiontime VARCHAR NOT NULL,
-  calldatagaslimit VARCHAR NOT NULL,
-  bytes VARCHAR NOT NULL,
-  cancel BOOLEAN NOT NULL,
-  cancellationfeerefund VARCHAR NOT NULL,
   negatedbandwidthprovider VARCHAR NOT NULL,
   initialnegation BOOLEAN NOT NULL,
   invalidexecutionproofid VARCHAR NOT NULL
