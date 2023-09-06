@@ -51,10 +51,10 @@ contract LayerCake is LayerCakeTools {
         require(params.tokenAddress != address(0), "C2");
         require(params.depositCap > 0, "C3");
         require(params.maxBandwidthMultiple > 0, "C4");
-        require(params.negationRewardMultiple > 0, "C6");
-        require(params.reorgAssumption > 0, "C7");
-        require(params.bandwidthDepositDenominator > 0, "C8");
-        require(params.minBandwidth > 0, "C9");
+        require(params.negationRewardMultiple > 0, "C5");
+        require(params.reorgAssumption > 0, "C6");
+        require(params.bandwidthDepositDenominator > 0, "C7");
+        require(params.minBandwidth > 0, "C8");
         token = IERC20(params.tokenAddress);
     }
 
@@ -62,11 +62,14 @@ contract LayerCake is LayerCakeTools {
     // FUNCTIONS
     // =================================================================================
 
-    function getExecutionValidity(address bandwidthProvider, bytes32 executionId, ExecutionProof memory executionProof)
+    /// @notice Proves whether an execution on the opposite chain has a valid corresponding storage of operations on this chain.
+    /// @dev This function is used for verifying the execution of negation operations.
+    function getExecutionValidity(address bandwidthProvider, ExecutionProof memory executionProof)
         public
         view
         returns (bool)
     {
+        bytes32 executionId = getExecutionId(departingPathwayId, executionProof.operations);
         // Check that the signature on proof matches bandwidthProvider signing the executionId hash
         require(recoverSigner(executionId, executionProof) == bandwidthProvider, "GEV1");
         return (storedExecutionIds[executionId]);
@@ -76,6 +79,8 @@ contract LayerCake is LayerCakeTools {
     // User functions
     // ==============
 
+    /// @notice Deposits an amount of tokens that are sent to a recipient on the opposite chain.
+    /// @dev These operations are executed on the opposite chain by calling executeStandardOperations() as a bandwidth provider.
     function storeStandardOperations(Operations memory operations) external {
         require(operations.negatedBandwidthProvider == address(0), "SSO1");
         uint256 currentBalance = token.balanceOf(address(this));
@@ -84,6 +89,47 @@ contract LayerCake is LayerCakeTools {
         _storeOperations(operations);
     }
 
+    /// @notice If a deposit is not immediately being transferred, this function can speed up execution by increasing the paid fee.
+    /// @dev This function is called on the chain where tokens are expected to be received by the recipient, and not on the chain where a deposit was initially made.
+    function increaseFee(bytes32 executionId, uint256 addedFee) external {
+        uint256 currentBalance = token.balanceOf(address(this));
+        token.safeTransferFrom(msg.sender, address(this), addedFee);
+        addedFee = token.balanceOf(address(this)) - currentBalance;
+        require(token.balanceOf(address(this)) <= params.depositCap, "IF1");
+        preparedExecutionIds[executionId].feeIncrease = preparedExecutionIds[executionId].feeIncrease + addedFee;
+    }
+
+    // ==============
+    // Bandwidth Provider functions
+    // ==============
+
+    /// @notice Add bandwidth to a new or existing bandwidth provider.
+    /// @dev There is a delay in using new bandwidth of one bandwidth period.
+    function addBandwidth(uint256 bandwidthAmount) external {
+        // Require that the added bandwidth is divisible by bandwidthDepositDenominator without a remainder
+        require(bandwidthAmount % params.bandwidthDepositDenominator == 0, "AB1");
+        uint256 depositedAmount = bandwidthAmount + (bandwidthAmount / params.bandwidthDepositDenominator);
+        _proveBandwidth(msg.sender, bandwidthAmount, 1);
+        uint256 currentBalance = token.balanceOf(address(this));
+        token.safeTransferFrom(msg.sender, address(this), depositedAmount);
+        bandwidthAmount = token.balanceOf(address(this)) - currentBalance;
+        require(token.balanceOf(address(this)) <= params.depositCap, "AB2");
+        emit BandwidthChanged(msg.sender, true, bandwidthAmount);
+    }
+
+    /// @notice Subtract bandwidth from an existing bandwidth provider and receive the corresponding amount of tokens.
+    /// @dev This is the only correct way to remove bandwidth from the system such that the entire amount of value deposited to become a bandwidth provider is retrieved.
+    function subtractBandwidth(uint256 bandwidthAmount) external {
+        // Require that the subtracted bandwidth is divisible by bandwidthDepositDenominator without a remainder
+        require(bandwidthAmount % params.bandwidthDepositDenominator == 0, "SB1");
+        uint256 withdrawnAmount = bandwidthAmount + (bandwidthAmount / params.bandwidthDepositDenominator);
+        _proveBandwidth(msg.sender, bandwidthAmount, 2);
+        token.safeTransfer(msg.sender, withdrawnAmount);
+        emit BandwidthChanged(msg.sender, false, bandwidthAmount);
+    }
+
+    /// @notice Insurance mechanism of LayerCake on the chain where an invalid execution occurred.
+    /// @dev Multiplies a bandwidth provider's bandwidth by -1 such that it either has no effective bandwidth or recovers from being previously negated.
     function storeNegationOperations(Operations memory operations, ExecutionProof memory invalidExecutionProof)
         external
     {
@@ -108,43 +154,11 @@ contract LayerCake is LayerCakeTools {
         emit NegationStored(operations.negatedBandwidthProvider, invalidExecutionProof);
     }
 
-    function addBandwidth(uint256 bandwidthAmount) external {
-        // Require that the added bandwidth is divisible by bandwidthDepositDenominator without a remainder
-        require(bandwidthAmount % params.bandwidthDepositDenominator == 0, "AB1");
-        uint256 depositedAmount = bandwidthAmount + (bandwidthAmount / params.bandwidthDepositDenominator);
-        _proveBandwidth(msg.sender, bandwidthAmount, 1);
-        uint256 currentBalance = token.balanceOf(address(this));
-        token.safeTransferFrom(msg.sender, address(this), depositedAmount);
-        bandwidthAmount = token.balanceOf(address(this)) - currentBalance;
-        require(token.balanceOf(address(this)) <= params.depositCap, "AB2");
-        emit BandwidthChanged(msg.sender, true, bandwidthAmount);
-    }
-
-    function subtractBandwidth(uint256 bandwidthAmount) external {
-        // Require that the subtracted bandwidth is divisible by bandwidthDepositDenominator without a remainder
-        require(bandwidthAmount % params.bandwidthDepositDenominator == 0, "SB1");
-        uint256 withdrawnAmount = bandwidthAmount + (bandwidthAmount / params.bandwidthDepositDenominator);
-        _proveBandwidth(msg.sender, bandwidthAmount, 2);
-        token.safeTransfer(msg.sender, withdrawnAmount);
-        emit BandwidthChanged(msg.sender, false, bandwidthAmount);
-    }
-
-    function increaseFee(bytes32 executionId, uint256 addedFee) external {
-        uint256 currentBalance = token.balanceOf(address(this));
-        token.safeTransferFrom(msg.sender, address(this), addedFee);
-        addedFee = token.balanceOf(address(this)) - currentBalance;
-        require(token.balanceOf(address(this)) <= params.depositCap, "IF1");
-        preparedExecutionIds[executionId].feeIncrease = preparedExecutionIds[executionId].feeIncrease + addedFee;
-    }
-
-    // ==============
-    // Bandwidth Provider functions
-    // ==============
-
+    /// @notice Sends an amount of tokens to a recipient corresponding to a deposit on the opposite chain.
+    /// @dev Callable only by bandwidth providers with an available bandwidth of at least partialAmount.
     function executeStandardOperations(ExecutionProof memory executionProof) external {
         require(executionProof.operations.negatedBandwidthProvider == address(0), "ESO1");
-        (, bool executionPrepared) = _executeOperations(executionProof);
-        if (!executionPrepared) {
+        if (!_executeOperations(executionProof)) {
             return;
         }
         token.safeTransfer(
@@ -152,6 +166,8 @@ contract LayerCake is LayerCakeTools {
         );
     }
 
+    /// @notice Insurance mechanism of LayerCake on the chain opposite when an invalid execution occurred.
+    /// @dev If a bandwidth provider has their bandwidth made negative on the opposite chain, then they must be proven to have executed operations that don't exist on this chain in order for this function call to succeed.
     function executeNegationOperations(
         ExecutionProof memory negationExecutionProof,
         ExecutionProof memory invalidExecutionProof
@@ -162,23 +178,19 @@ contract LayerCake is LayerCakeTools {
                 == negationExecutionProof.operations.invalidExecutionProofId,
             "ENO2"
         );
-        bytes32 invalidExecutionId = getExecutionId(departingPathwayId, invalidExecutionProof.operations);
         require(
             negationExecutionProof.operations.initialNegation
-                != getExecutionValidity(
-                    negationExecutionProof.operations.negatedBandwidthProvider, invalidExecutionId, invalidExecutionProof
-                ),
+                != getExecutionValidity(negationExecutionProof.operations.negatedBandwidthProvider, invalidExecutionProof),
             "ENO3"
         );
-        (, bool executionPrepared) = _executeOperations(negationExecutionProof);
-        if (!executionPrepared) {
+        if (!_executeOperations(negationExecutionProof)) {
             return;
         }
         token.safeTransfer(
             negationExecutionProof.operations.recipient,
             negationExecutionProof.operations.amount - negationExecutionProof.operations.fee
         );
-        emit NegationStored(negationExecutionProof.operations.negatedBandwidthProvider, invalidExecutionProof);
+        emit NegationExecuted(negationExecutionProof.operations.negatedBandwidthProvider, invalidExecutionProof);
     }
 
     // ==============
@@ -188,16 +200,16 @@ contract LayerCake is LayerCakeTools {
     function _storeOperations(Operations memory operations) private {
         require(operations.recipient != address(0), "SO1");
         require(operations.sender == msg.sender, "SO2");
-        require(operations.amount >= operations.fee, "SO4");
-        require(token.balanceOf(address(this)) <= params.depositCap, "SO5");
+        require(operations.amount >= operations.fee, "SO3");
+        require(token.balanceOf(address(this)) <= params.depositCap, "SO4");
         operations.executionTime = block.timestamp;
         bytes32 executionId = getExecutionId(departingPathwayId, operations);
-        require(!storedExecutionIds[executionId], "SO6");
+        require(!storedExecutionIds[executionId], "SO5");
         storedExecutionIds[executionId] = true;
         emit OperationsStored(executionId, operations);
     }
 
-    function _executeOperations(ExecutionProof memory executionProof) private returns (uint256, bool) {
+    function _executeOperations(ExecutionProof memory executionProof) private returns (bool) {
         require(executionProof.operations.recipient != address(0), "EO1");
         require(block.timestamp >= executionProof.operations.executionTime, "EO2");
         bytes32 executionId = getExecutionId(arrivingPathwayId, executionProof.operations);
@@ -207,7 +219,7 @@ contract LayerCake is LayerCakeTools {
         _proveBandwidth(msg.sender, bandwidthUsed, 0);
         token.safeTransfer(msg.sender, partialFee);
         emit OperationsExecuted(executionId, msg.sender, executionProof, executionPrepared);
-        return (partialFee, executionPrepared);
+        return executionPrepared;
     }
 
     function _prepareExecutionId(bytes32 executionId, ExecutionProof memory executionProof)
@@ -285,20 +297,18 @@ contract LayerCake is LayerCakeTools {
         bytes32 invalidExecutionProofId
     ) private returns (uint256 executionAmount) {
         BandwidthProvider memory bp = bpInfo[bandwidthProvider];
-        if (bp.negated) {
-            require(bp.prevInvalidExecutionProofId == invalidExecutionProofId, "NB1");
-        }
         if (!bp.negated) {
-            if (bp.negationCounter > 1) {
+            if (bp.negationCounter <= 1) {
+                require(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple, "NB1");
+            } else {
                 require(depositedAmount - fee == bp.currentTotalBandwidth, "NB2");
                 bp.negationCounter = 0;
-            } else {
-                require(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple, "NB3");
             }
             bp.negationCounter = bp.negationCounter + 1;
             executionAmount = depositedAmount
                 + (bp.currentTotalBandwidth / (params.negationRewardMultiple * params.bandwidthDepositDenominator));
         } else {
+            require(bp.prevInvalidExecutionProofId == invalidExecutionProofId, "NB3");
             require(depositedAmount - fee == bp.currentTotalBandwidth, "NB4");
             executionAmount = depositedAmount + bp.currentTotalBandwidth / params.maxBandwidthMultiple;
         }

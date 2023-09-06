@@ -27,45 +27,45 @@ src/core/flattened/LayerCakeDestinationDeploy.f.sol#L1536-L1548
 
 
  - [ ] ID-2
-[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L887-L918) uses a dangerous strict equality:
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCake.f.sol#L909)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L904-L933) uses a dangerous strict equality:
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple,NB1)](src/core/flattened/LayerCake.f.sol#L914)
 
-src/core/flattened/LayerCake.f.sol#L887-L918
+src/core/flattened/LayerCake.f.sol#L904-L933
 
 
  - [ ] ID-3
-[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L887-L918) uses a dangerous strict equality:
-	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB1)](src/core/flattened/LayerCake.f.sol#L896)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L904-L933) uses a dangerous strict equality:
+	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB3)](src/core/flattened/LayerCake.f.sol#L923)
 
-src/core/flattened/LayerCake.f.sol#L887-L918
+src/core/flattened/LayerCake.f.sol#L904-L933
 
 
  - [ ] ID-4
-[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L887-L918) uses a dangerous strict equality:
-	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCake.f.sol#L913)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L904-L933) uses a dangerous strict equality:
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCake.f.sol#L916)
 
-src/core/flattened/LayerCake.f.sol#L887-L918
+src/core/flattened/LayerCake.f.sol#L904-L933
 
 
  - [ ] ID-5
-[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L887-L918) uses a dangerous strict equality:
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple,NB3)](src/core/flattened/LayerCake.f.sol#L903)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L904-L933) uses a dangerous strict equality:
+	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCake.f.sol#L928)
 
-src/core/flattened/LayerCake.f.sol#L887-L918
+src/core/flattened/LayerCake.f.sol#L904-L933
 
 
  - [ ] ID-6
-[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L887-L918) uses a dangerous strict equality:
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCake.f.sol#L900)
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L904-L933) uses a dangerous strict equality:
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCake.f.sol#L924)
 
-src/core/flattened/LayerCake.f.sol#L887-L918
+src/core/flattened/LayerCake.f.sol#L904-L933
 
 
  - [ ] ID-7
-[LayerCake._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L844-L885) uses a dangerous strict equality:
-	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L866)
+[LayerCake._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L861-L902) uses a dangerous strict equality:
+	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L883)
 
-src/core/flattened/LayerCake.f.sol#L844-L885
+src/core/flattened/LayerCake.f.sol#L861-L902
 
 
 ## unused-return
@@ -1348,171 +1348,171 @@ src/core/flattened/LayerCakeOriginDeploy.f.sol#L1572-L1577
 
 
  - [ ] ID-215
-[LayerCake._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L844-L885) uses timestamp for comparisons
+[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L904-L933) uses timestamp for comparisons
 	Dangerous comparisons:
-	- [require(bool,string)(! bp.negated && block.timestamp - bp.timeLastNegated > 2 * params.reorgAssumption,PB1)](src/core/flattened/LayerCake.f.sol#L846)
-	- [require(bool,string)(block.timestamp >= bp.timeLastActive,PB2)](src/core/flattened/LayerCake.f.sol#L847)
-	- [(block.timestamp - bp.startTime) / (2 * params.reorgAssumption) > (bp.timeLastActive - bp.startTime) / (2 * params.reorgAssumption)](src/core/flattened/LayerCake.f.sol#L851-L852)
-	- [bp.currentUsedBandwidth > bp.currentTotalBandwidth || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth](src/core/flattened/LayerCake.f.sol#L856-L857)
-	- [require(bool,string)(block.timestamp - bp.timeLastActive > params.reorgAssumption,PB3)](src/core/flattened/LayerCake.f.sol#L859)
-	- [require(bool,string)(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount,PB4)](src/core/flattened/LayerCake.f.sol#L864)
-	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L866)
-	- [require(bool,string)(bp.currentTotalBandwidth >= params.minBandwidth,PB5)](src/core/flattened/LayerCake.f.sol#L872)
-	- [require(bool,string)(bp.currentTotalBandwidth <= params.minBandwidth * params.maxBandwidthMultiple,PB6)](src/core/flattened/LayerCake.f.sol#L873)
-	- [bp.currentTotalBandwidth > 0](src/core/flattened/LayerCake.f.sol#L880)
-	- [require(bool,string)(bp.currentTotalBandwidth >= params.minBandwidth,PB7)](src/core/flattened/LayerCake.f.sol#L881)
+	- [bp.negationCounter <= 1](src/core/flattened/LayerCake.f.sol#L913)
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple,NB1)](src/core/flattened/LayerCake.f.sol#L914)
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCake.f.sol#L916)
+	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB3)](src/core/flattened/LayerCake.f.sol#L923)
+	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCake.f.sol#L924)
+	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCake.f.sol#L928)
 
-src/core/flattened/LayerCake.f.sol#L844-L885
+src/core/flattened/LayerCake.f.sol#L904-L933
 
 
  - [ ] ID-216
-[LayerCake._executeOperations(LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L807-L818) uses timestamp for comparisons
+[LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L745-L767) uses timestamp for comparisons
 	Dangerous comparisons:
-	- [require(bool,string)(block.timestamp >= executionProof.operations.executionTime,EO2)](src/core/flattened/LayerCake.f.sol#L809)
+	- [require(bool,string)(operations.negatedBandwidthProvider != address(0),SNO1)](src/core/flattened/LayerCake.f.sol#L748)
+	- [require(bool,string)(getInvalidExecutionProofId(invalidExecutionProof) == operations.invalidExecutionProofId,SNO2)](src/core/flattened/LayerCake.f.sol#L749)
+	- [require(bool,string)(recoverSigner(getExecutionId(arrivingPathwayId,invalidExecutionProof.operations),invalidExecutionProof) == operations.negatedBandwidthProvider,SNO3)](src/core/flattened/LayerCake.f.sol#L750-L754)
 
-src/core/flattened/LayerCake.f.sol#L807-L818
+src/core/flattened/LayerCake.f.sol#L745-L767
 
 
  - [ ] ID-217
-[LayerCake._storeOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L795-L805) uses timestamp for comparisons
+[LayerCake._storeOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L812-L822) uses timestamp for comparisons
 	Dangerous comparisons:
-	- [require(bool,string)(operations.recipient != address(0),SO1)](src/core/flattened/LayerCake.f.sol#L796)
-	- [require(bool,string)(operations.sender == msg.sender,SO2)](src/core/flattened/LayerCake.f.sol#L797)
-	- [require(bool,string)(operations.amount >= operations.fee,SO4)](src/core/flattened/LayerCake.f.sol#L798)
+	- [require(bool,string)(operations.recipient != address(0),SO1)](src/core/flattened/LayerCake.f.sol#L813)
+	- [require(bool,string)(operations.sender == msg.sender,SO2)](src/core/flattened/LayerCake.f.sol#L814)
+	- [require(bool,string)(operations.amount >= operations.fee,SO3)](src/core/flattened/LayerCake.f.sol#L815)
 
-src/core/flattened/LayerCake.f.sol#L795-L805
+src/core/flattened/LayerCake.f.sol#L812-L822
 
 
  - [ ] ID-218
-[LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L694-L716) uses timestamp for comparisons
+[LayerCake._proveBandwidth(address,uint256,uint256)](src/core/flattened/LayerCake.f.sol#L861-L902) uses timestamp for comparisons
 	Dangerous comparisons:
-	- [require(bool,string)(operations.negatedBandwidthProvider != address(0),SNO1)](src/core/flattened/LayerCake.f.sol#L697)
-	- [require(bool,string)(getInvalidExecutionProofId(invalidExecutionProof) == operations.invalidExecutionProofId,SNO2)](src/core/flattened/LayerCake.f.sol#L698)
-	- [require(bool,string)(recoverSigner(getExecutionId(arrivingPathwayId,invalidExecutionProof.operations),invalidExecutionProof) == operations.negatedBandwidthProvider,SNO3)](src/core/flattened/LayerCake.f.sol#L699-L703)
+	- [require(bool,string)(! bp.negated && block.timestamp - bp.timeLastNegated > 2 * params.reorgAssumption,PB1)](src/core/flattened/LayerCake.f.sol#L863)
+	- [require(bool,string)(block.timestamp >= bp.timeLastActive,PB2)](src/core/flattened/LayerCake.f.sol#L864)
+	- [(block.timestamp - bp.startTime) / (2 * params.reorgAssumption) > (bp.timeLastActive - bp.startTime) / (2 * params.reorgAssumption)](src/core/flattened/LayerCake.f.sol#L868-L869)
+	- [bp.currentUsedBandwidth > bp.currentTotalBandwidth || amount > bp.currentTotalBandwidth - bp.currentUsedBandwidth](src/core/flattened/LayerCake.f.sol#L873-L874)
+	- [require(bool,string)(block.timestamp - bp.timeLastActive > params.reorgAssumption,PB3)](src/core/flattened/LayerCake.f.sol#L876)
+	- [require(bool,string)(bp.currentTotalBandwidth - bp.currentUsedBandwidth >= amount,PB4)](src/core/flattened/LayerCake.f.sol#L881)
+	- [bp.startTime == 0](src/core/flattened/LayerCake.f.sol#L883)
+	- [require(bool,string)(bp.currentTotalBandwidth >= params.minBandwidth,PB5)](src/core/flattened/LayerCake.f.sol#L889)
+	- [require(bool,string)(bp.currentTotalBandwidth <= params.minBandwidth * params.maxBandwidthMultiple,PB6)](src/core/flattened/LayerCake.f.sol#L890)
+	- [bp.currentTotalBandwidth > 0](src/core/flattened/LayerCake.f.sol#L897)
+	- [require(bool,string)(bp.currentTotalBandwidth >= params.minBandwidth,PB7)](src/core/flattened/LayerCake.f.sol#L898)
 
-src/core/flattened/LayerCake.f.sol#L694-L716
+src/core/flattened/LayerCake.f.sol#L861-L902
 
 
  - [ ] ID-219
-[LayerCake._negateBp(address,uint256,uint256,bool,bytes32)](src/core/flattened/LayerCake.f.sol#L887-L918) uses timestamp for comparisons
+[LayerCake._executeOperations(LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L824-L835) uses timestamp for comparisons
 	Dangerous comparisons:
-	- [require(bool,string)(bp.prevInvalidExecutionProofId == invalidExecutionProofId,NB1)](src/core/flattened/LayerCake.f.sol#L896)
-	- [bp.negationCounter > 1](src/core/flattened/LayerCake.f.sol#L899)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB2)](src/core/flattened/LayerCake.f.sol#L900)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth / params.maxBandwidthMultiple,NB3)](src/core/flattened/LayerCake.f.sol#L903)
-	- [require(bool,string)(depositedAmount - fee == bp.currentTotalBandwidth,NB4)](src/core/flattened/LayerCake.f.sol#L909)
-	- [require(bool,string)(initialNegation == bp.negated,NB5)](src/core/flattened/LayerCake.f.sol#L913)
+	- [require(bool,string)(block.timestamp >= executionProof.operations.executionTime,EO2)](src/core/flattened/LayerCake.f.sol#L826)
 
-src/core/flattened/LayerCake.f.sol#L887-L918
+src/core/flattened/LayerCake.f.sol#L824-L835
 
 
 ## reentrancy-benign
 Impact: Low
 Confidence: Medium
  - [ ] ID-220
-Reentrancy in [LayerCake.increaseFee(bytes32,uint256)](src/core/flattened/LayerCake.f.sol#L739-L745):
+Reentrancy in [LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L745-L767):
 	External calls:
-	- [token.safeTransferFrom(msg.sender,address(this),addedFee)](src/core/flattened/LayerCake.f.sol#L741)
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L756)
 	State variables written after the call(s):
-	- [preparedExecutionIds[executionId].feeIncrease = preparedExecutionIds[executionId].feeIncrease + addedFee](src/core/flattened/LayerCake.f.sol#L744)
+	- [operations.amount = _negateBp(operations.negatedBandwidthProvider,operations.amount,operations.fee,operations.initialNegation,operations.invalidExecutionProofId)](src/core/flattened/LayerCake.f.sol#L758-L764)
+		- [bpInfo[bandwidthProvider] = bp](src/core/flattened/LayerCake.f.sol#L931)
+	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L765)
+		- [storedExecutionIds[executionId] = true](src/core/flattened/LayerCake.f.sol#L820)
 
-src/core/flattened/LayerCake.f.sol#L739-L745
+src/core/flattened/LayerCake.f.sol#L745-L767
 
 
  - [ ] ID-221
-Reentrancy in [LayerCake.storeStandardOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L686-L692):
+Reentrancy in [LayerCake.increaseFee(bytes32,uint256)](src/core/flattened/LayerCake.f.sol#L706-L712):
 	External calls:
-	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L689)
+	- [token.safeTransferFrom(msg.sender,address(this),addedFee)](src/core/flattened/LayerCake.f.sol#L708)
 	State variables written after the call(s):
-	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L691)
-		- [storedExecutionIds[executionId] = true](src/core/flattened/LayerCake.f.sol#L803)
+	- [preparedExecutionIds[executionId].feeIncrease = preparedExecutionIds[executionId].feeIncrease + addedFee](src/core/flattened/LayerCake.f.sol#L711)
 
-src/core/flattened/LayerCake.f.sol#L686-L692
+src/core/flattened/LayerCake.f.sol#L706-L712
 
 
  - [ ] ID-222
-Reentrancy in [LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L694-L716):
+Reentrancy in [LayerCake.storeStandardOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L696-L702):
 	External calls:
-	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L705)
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L699)
 	State variables written after the call(s):
-	- [operations.amount = _negateBp(operations.negatedBandwidthProvider,operations.amount,operations.fee,operations.initialNegation,operations.invalidExecutionProofId)](src/core/flattened/LayerCake.f.sol#L707-L713)
-		- [bpInfo[bandwidthProvider] = bp](src/core/flattened/LayerCake.f.sol#L916)
-	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L714)
-		- [storedExecutionIds[executionId] = true](src/core/flattened/LayerCake.f.sol#L803)
+	- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L701)
+		- [storedExecutionIds[executionId] = true](src/core/flattened/LayerCake.f.sol#L820)
 
-src/core/flattened/LayerCake.f.sol#L694-L716
+src/core/flattened/LayerCake.f.sol#L696-L702
 
 
 ## reentrancy-events
 Impact: Low
 Confidence: Medium
  - [ ] ID-223
-Reentrancy in [LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L694-L716):
+Reentrancy in [LayerCake.storeStandardOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L696-L702):
 	External calls:
-	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L705)
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L699)
 	Event emitted after the call(s):
-	- [NegationStored(operations.negatedBandwidthProvider,invalidExecutionProof)](src/core/flattened/LayerCake.f.sol#L715)
-	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L804)
-		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L714)
+	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L821)
+		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L701)
 
-src/core/flattened/LayerCake.f.sol#L694-L716
+src/core/flattened/LayerCake.f.sol#L696-L702
 
 
  - [ ] ID-224
-Reentrancy in [LayerCake.addBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L718-L728):
+Reentrancy in [LayerCake._executeOperations(LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L824-L835):
 	External calls:
-	- [token.safeTransferFrom(msg.sender,address(this),depositedAmount)](src/core/flattened/LayerCake.f.sol#L724)
+	- [token.safeTransfer(msg.sender,partialFee)](src/core/flattened/LayerCake.f.sol#L832)
 	Event emitted after the call(s):
-	- [BandwidthChanged(msg.sender,true,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L727)
+	- [OperationsExecuted(executionId,msg.sender,executionProof,executionPrepared)](src/core/flattened/LayerCake.f.sol#L833)
 
-src/core/flattened/LayerCake.f.sol#L718-L728
+src/core/flattened/LayerCake.f.sol#L824-L835
 
 
  - [ ] ID-225
-Reentrancy in [LayerCake.storeStandardOperations(LayerCakeTools.Operations)](src/core/flattened/LayerCake.f.sol#L686-L692):
+Reentrancy in [LayerCake.subtractBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L734-L741):
 	External calls:
-	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L689)
+	- [token.safeTransfer(msg.sender,withdrawnAmount)](src/core/flattened/LayerCake.f.sol#L739)
 	Event emitted after the call(s):
-	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L804)
-		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L691)
+	- [BandwidthChanged(msg.sender,false,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L740)
 
-src/core/flattened/LayerCake.f.sol#L686-L692
+src/core/flattened/LayerCake.f.sol#L734-L741
 
 
  - [ ] ID-226
-Reentrancy in [LayerCake.executeNegationOperations(LayerCakeTools.ExecutionProof,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L762-L789):
+Reentrancy in [LayerCake.addBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L720-L730):
 	External calls:
-	- [(executionPrepared) = _executeOperations(negationExecutionProof)](src/core/flattened/LayerCake.f.sol#L780)
-		- [returndata = address(token).functionCall(data)](src/core/flattened/LayerCake.f.sol#L487)
-		- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCake.f.sol#L258)
-		- [token.safeTransfer(msg.sender,partialFee)](src/core/flattened/LayerCake.f.sol#L815)
-	- [token.safeTransfer(negationExecutionProof.operations.recipient,negationExecutionProof.operations.amount - negationExecutionProof.operations.fee)](src/core/flattened/LayerCake.f.sol#L784-L787)
-	External calls sending eth:
-	- [(executionPrepared) = _executeOperations(negationExecutionProof)](src/core/flattened/LayerCake.f.sol#L780)
-		- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCake.f.sol#L258)
+	- [token.safeTransferFrom(msg.sender,address(this),depositedAmount)](src/core/flattened/LayerCake.f.sol#L726)
 	Event emitted after the call(s):
-	- [NegationStored(negationExecutionProof.operations.negatedBandwidthProvider,invalidExecutionProof)](src/core/flattened/LayerCake.f.sol#L788)
+	- [BandwidthChanged(msg.sender,true,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L729)
 
-src/core/flattened/LayerCake.f.sol#L762-L789
+src/core/flattened/LayerCake.f.sol#L720-L730
 
 
  - [ ] ID-227
-Reentrancy in [LayerCake._executeOperations(LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L807-L818):
+Reentrancy in [LayerCake.storeNegationOperations(LayerCakeTools.Operations,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L745-L767):
 	External calls:
-	- [token.safeTransfer(msg.sender,partialFee)](src/core/flattened/LayerCake.f.sol#L815)
+	- [token.safeTransferFrom(msg.sender,address(this),operations.amount)](src/core/flattened/LayerCake.f.sol#L756)
 	Event emitted after the call(s):
-	- [OperationsExecuted(executionId,msg.sender,executionProof,executionPrepared)](src/core/flattened/LayerCake.f.sol#L816)
+	- [NegationStored(operations.negatedBandwidthProvider,invalidExecutionProof)](src/core/flattened/LayerCake.f.sol#L766)
+	- [OperationsStored(executionId,operations)](src/core/flattened/LayerCake.f.sol#L821)
+		- [_storeOperations(operations)](src/core/flattened/LayerCake.f.sol#L765)
 
-src/core/flattened/LayerCake.f.sol#L807-L818
+src/core/flattened/LayerCake.f.sol#L745-L767
 
 
  - [ ] ID-228
-Reentrancy in [LayerCake.subtractBandwidth(uint256)](src/core/flattened/LayerCake.f.sol#L730-L737):
+Reentrancy in [LayerCake.executeNegationOperations(LayerCakeTools.ExecutionProof,LayerCakeTools.ExecutionProof)](src/core/flattened/LayerCake.f.sol#L783-L806):
 	External calls:
-	- [token.safeTransfer(msg.sender,withdrawnAmount)](src/core/flattened/LayerCake.f.sol#L735)
+	- [! _executeOperations(negationExecutionProof)](src/core/flattened/LayerCake.f.sol#L798)
+		- [returndata = address(token).functionCall(data)](src/core/flattened/LayerCake.f.sol#L487)
+		- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCake.f.sol#L258)
+		- [token.safeTransfer(msg.sender,partialFee)](src/core/flattened/LayerCake.f.sol#L832)
+	- [token.safeTransfer(negationExecutionProof.operations.recipient,negationExecutionProof.operations.amount - negationExecutionProof.operations.fee)](src/core/flattened/LayerCake.f.sol#L801-L804)
+	External calls sending eth:
+	- [! _executeOperations(negationExecutionProof)](src/core/flattened/LayerCake.f.sol#L798)
+		- [(success,returndata) = target.call{value: value}(data)](src/core/flattened/LayerCake.f.sol#L258)
 	Event emitted after the call(s):
-	- [BandwidthChanged(msg.sender,false,bandwidthAmount)](src/core/flattened/LayerCake.f.sol#L736)
+	- [NegationExecuted(negationExecutionProof.operations.negatedBandwidthProvider,invalidExecutionProof)](src/core/flattened/LayerCake.f.sol#L805)
 
-src/core/flattened/LayerCake.f.sol#L730-L737
+src/core/flattened/LayerCake.f.sol#L783-L806
 
 

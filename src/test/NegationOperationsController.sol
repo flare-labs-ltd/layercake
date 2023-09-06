@@ -236,6 +236,6 @@ contract NegationOperationsController is Test, LayerCakeTools {
         BandwidthProviderController(originBp1).executeNegationOperations(
             c.originLayercake(), _negationExecutionProof, _invalidExecutionProof
         );
-        assertTrue(c.destinationLayercake().getExecutionValidity(originBp1, executionId, _negationExecutionProof));
+        assertTrue(c.destinationLayercake().getExecutionValidity(originBp1, _negationExecutionProof));
     }
 }

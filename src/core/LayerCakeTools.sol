@@ -66,16 +66,21 @@ contract LayerCakeTools {
     // EVENTS
     // =================================================================================
 
+    /// @notice For storeStandardOperations() and storeNegationOperations(). Used by bandwidth providers to compete to be the first to execute the stored operations on the opposite chain.
     event OperationsStored(bytes32 executionId, Operations operations);
 
+    /// @notice For executeStandardOperations() and executeNegationOperations(). Used by anyone to detect invalid executions by bandwidth providers in order to compete to be the first to negate them.
     event OperationsExecuted(
         bytes32 executionId, address bandwidthProvider, ExecutionProof executionProof, bool executionPrepared
     );
 
+    /// @notice For storeNegationOperations(). Used by bandwidth providers to prepare a call to executeNegationOperations().
     event NegationStored(address bandwidthProvider, ExecutionProof invalidExecutionProof);
 
+    /// @notice For executeNegationOperations().
     event NegationExecuted(address bandwidthProvider, ExecutionProof invalidExecutionProof);
 
+    /// @notice For addBandwidth() and subtractBandwidth().
     event BandwidthChanged(address bandwidthProvider, bool added, uint256 amount);
 
     // =================================================================================
