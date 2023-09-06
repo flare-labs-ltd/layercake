@@ -4,19 +4,21 @@
 
 pragma solidity 0.8.19;
 
+import "../../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
 import "../../lib/openzeppelin-contracts/contracts/utils/structs/EnumerableMap.sol";
 import "./LayerCakeDeployTools.sol";
-import "./LayerCakeTransportedToken.sol";
 
 contract LayerCakeDestinationDeploy is LayerCakeDeployTools, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     bool public deployed;
     address public immutable deployer;
     bytes32 public immutable verificationHash;
     uint256 public immutable depositedAmount;
     bytes32 public computedVerificationHash;
 
-    LayerCakeTransportedToken public immutable destinationToken;
+    IERC20 public immutable destinationToken;
 
     EnumerableMap.AddressToUintMap internal deposits;
 
@@ -29,7 +31,7 @@ contract LayerCakeDestinationDeploy is LayerCakeDeployTools, ReentrancyGuard {
     ) {
         deployer = msg.sender;
         verificationHash = cVerificationHash;
-        destinationToken = LayerCakeTransportedToken(cDestinationTokenAddress);
+        destinationToken = IERC20(cDestinationTokenAddress);
         require(destinationToken.balanceOf(cLayerCakeAddress) == cDepositCap - cDepositedAmount);
         depositedAmount = cDepositedAmount;
     }
@@ -70,6 +72,6 @@ contract LayerCakeDestinationDeploy is LayerCakeDeployTools, ReentrancyGuard {
         uint256 currentBalance = EnumerableMap.get(deposits, msg.sender);
         require(currentBalance > 0, "W1");
         EnumerableMap.remove(deposits, msg.sender);
-        require(destinationToken.transfer(msg.sender, currentBalance), "W2");
+        destinationToken.safeTransfer(msg.sender, currentBalance);
     }
 }

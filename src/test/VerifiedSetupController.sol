@@ -17,6 +17,7 @@ import "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../core/LayerCakeDeployTools.sol";
 import "../core/LayerCakeOriginDeploy.sol";
 import "../core/LayerCakeDestinationDeploy.sol";
+import "../core/LayerCakeTransportedToken.sol";
 import "../core/LayerCake.sol";
 
 // Testing contracts
@@ -45,7 +46,8 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
     uint256 public bandwidthDepositDenominator = 10;
     uint256 public minBandwidth = 10000;
     uint256 public depositCap = 2 ** 256 - 1;
-    uint256 public forwardedFeeDenominator = 1000; // 10 basis points
+    uint256 public maxBandwidthMultiple = 1000;
+    uint256 public negationRewardMultiple = 10;
 
     // Origin-chain constructor values
     bool public originIsDestinationChain = false;
@@ -94,14 +96,12 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
             assetId,
             contractId,
             originTokenAddress,
-            originToken.name(),
-            originToken.symbol(),
             depositCap,
+            maxBandwidthMultiple,
+            negationRewardMultiple,
             reorgAssumption,
             bandwidthDepositDenominator,
-            minBandwidth,
-            originForwardedFeeRecipient,
-            forwardedFeeDenominator
+            minBandwidth
         );
 
         originLayercake = new LayerCake(originConstructorParams);
@@ -146,7 +146,8 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
         destinationToken = new LayerCakeTransportedToken(
                                     depositCap, 
                                     originToken.name(), 
-                                    originToken.symbol());
+                                    originToken.symbol(),
+                                    originToken.decimals());
 
         // Destination deploy
         destinationConstructorParams = ConstructorParams(
@@ -156,14 +157,12 @@ contract VerifiedSetupController is Test, LayerCakeDeployTools, LayerCakeTools {
             assetId,
             contractId,
             address(destinationToken),
-            "",
-            "",
             depositCap,
+            maxBandwidthMultiple,
+            negationRewardMultiple,
             reorgAssumption,
             bandwidthDepositDenominator,
-            minBandwidth,
-            destinationForwardedFeeRecipient,
-            forwardedFeeDenominator
+            minBandwidth
         );
 
         destinationLayercake = new LayerCake(

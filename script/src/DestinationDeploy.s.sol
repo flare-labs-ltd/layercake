@@ -62,11 +62,13 @@ contract DestinationDeploy is Test, Script, LayerCakeDeployTools, LayerCakeTools
 
         vm.startBroadcast(deployerPrivateKey);
 
+        (,,,,,, depositCap,,,,,) = destinationLayercake.params();
+
         destinationDeploy = new LayerCakeDestinationDeploy(
                                         address(destinationLayercake),
                                         address(destinationToken),
                                         verificationHash,
-                                        destinationLayercake.depositCap(),
+                                        depositCap,
                                         totalDepositAmount
                                     );
         destinationToken.transfer(address(destinationDeploy), totalDepositAmount);

@@ -32,22 +32,18 @@ contract UserController is LayerCakeTools {
         external
         controllerOnly
     {
-        _token.approve(
-            address(_layercake), _operations.amount + _operations.amount / _layercake.forwardedFeeDenominator()
-        );
+        _token.approve(address(_layercake), _operations.amount);
         _layercake.storeStandardOperations(_operations);
     }
 
-    function storeNegationOperations(IERC20 _token, LayerCake _layercake, Operations memory _operations)
-        external
-        controllerOnly
-    {
+    function storeNegationOperations(
+        IERC20 _token,
+        LayerCake _layercake,
+        Operations memory _operations,
+        ExecutionProof memory _invalidExecutionProof
+    ) external controllerOnly {
         _token.approve(address(_layercake), _operations.amount);
-        _layercake.storeNegationOperations(_operations);
-    }
-
-    function cancelStandardOperations(LayerCake _layercake, Operations memory _operations) external controllerOnly {
-        _layercake.cancelStandardOperations(_operations);
+        _layercake.storeNegationOperations(_operations, _invalidExecutionProof);
     }
 
     function depositToLayerCakeOriginDeploy(
@@ -56,7 +52,7 @@ contract UserController is LayerCakeTools {
         uint256 _amount
     ) external controllerOnly {
         _token.approve(address(_layerCakeOriginDeploy), _amount);
-        _layerCakeOriginDeploy.deposit(_amount);
+        _layerCakeOriginDeploy.deposit(_amount, address(this));
     }
 
     function withdrawFromLayerCakeOriginDeploy(LayerCakeOriginDeploy _layerCakeOriginDeploy, uint256 _amount)

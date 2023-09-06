@@ -38,14 +38,12 @@ contract OriginLayerCake is Test, Script, LayerCakeTools {
             vm.envUint("ASSET_ID"),
             vm.envUint("CONTRACT_ID"),
             address(originToken),
-            vm.envString("ORIGIN_TOKEN_NAME"),
-            vm.envString("ORIGIN_TOKEN_SYMBOL"),
             vm.envUint("DEPOSIT_CAP") * 1 ether,
-            vm.envUint("REORG_ASSUMPTION") * 1 hours,
+            vm.envUint("MAX_BANDWIDTH_MULTIPLE"),
+            vm.envUint("NEGATION_REWARD_MULTIPLE"),
+            vm.envUint("REORG_ASSUMPTION") * 1 minutes,
             vm.envUint("BANDWIDTH_DEPOSIT_DENOMINATOR"),
-            vm.envUint("MIN_BANDWIDTH") * 1 ether,
-            vm.envAddress("ORIGIN_FORWARDED_FEE_RECIPIENT"),
-            vm.envUint("FORWARDED_FEE_DENOMINATOR")
+            vm.envUint("MIN_BANDWIDTH") * 1 ether
         );
 
         // Create LayerCake contract

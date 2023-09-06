@@ -27,8 +27,8 @@ contract TestDestinationAddBandwidth is Test, Script {
 
         vm.startBroadcast(executeOperationsPrivateKey);
         uint256 bandwidthAmount = depositAmount / 2;
-        uint256 approvalAmount =
-            bandwidthAmount + bandwidthAmount / layercake.bandwidthManager().bandwidthDepositDenominator();
+        (,,,,,,,,,, uint256 bandwidthDepositDenominator,) = layercake.params();
+        uint256 approvalAmount = bandwidthAmount + bandwidthAmount / bandwidthDepositDenominator;
         layercake.token().approve(address(layercake), approvalAmount);
         layercake.addBandwidth(bandwidthAmount);
         vm.stopBroadcast();

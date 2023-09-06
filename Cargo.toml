@@ -21,5 +21,4 @@ eyre = "0.6"
 chrono = "0.4.26"
 rand = "0.8.5"
 layer_cake = { path = "./src/abigen-builder/layer_cake"}
-layer_cake_bandwidth_manager = { path = "./src/abigen-builder/layer_cake_bandwidth_manager"}
 ierc20 = { path = "./src/abigen-builder/ierc20" }

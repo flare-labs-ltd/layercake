@@ -63,23 +63,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let gas_price: U256 = client.get_gas_price().await?;
 
     // Approve IERC20 transfer
-    let forwarded_fee_denominator: U256;
-    if let Ok(result) = &lc_contract.forwarded_fee_denominator().call().await {
-        forwarded_fee_denominator = *result;
-        println!("forwarded_fee_denominator is {forwarded_fee_denominator:?}");
-    } else {
-        panic!("forwarded_fee_denominator not found.")
-    }
-    let amount: U256 = U256::from(
-        rand::thread_rng()
-            .gen_range(forwarded_fee_denominator.as_u64()..10 * forwarded_fee_denominator.as_u64()),
-    );
-    let forwarded_fee: U256 = U256::from(amount + amount / forwarded_fee_denominator);
+    let amount: U256 = U256::from(rand::thread_rng().gen_range(10..10 * 10));
     let data: Bytes;
-    match token_contract
-        .approve(lc_address, amount + forwarded_fee)
-        .calldata()
-    {
+    match token_contract.approve(lc_address, amount).calldata() {
         Some(result) => data = result,
         None => panic!("token_contract returned no calldata"),
     }
@@ -105,10 +91,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         sender: client.address(),
         recipient: "0x000000000000000000000000000000000000dEaD".parse::<Address>()?,
         execution_time: U256::from(0),
-        call_data_gas_limit: U256::from(0),
-        call_data: Bytes::from(vec![0]),
-        cancel: false,
-        cancellation_fee_refund: U256::from(0),
         negated_bandwidth_provider: Address::from([u8::from(0); 20]),
         initial_negation: false,
         invalid_execution_proof_id: [u8::from(0); 32],

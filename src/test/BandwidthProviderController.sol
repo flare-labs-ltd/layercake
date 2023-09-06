@@ -33,19 +33,14 @@ contract BandwidthProviderController is LayerCakeTools {
         _layercake.executeStandardOperations(_executionProof);
     }
 
-    function executeCancelStandardOperations(LayerCake _layercake, ExecutionProof memory _executionProof)
-        external
-        controllerOnly
-    {
-        _layercake.executeCancelStandardOperations(_executionProof);
-    }
-
-    function storeNegationOperations(IERC20 _token, LayerCake _layercake, Operations memory _operations)
-        external
-        controllerOnly
-    {
+    function storeNegationOperations(
+        IERC20 _token,
+        LayerCake _layercake,
+        Operations memory _operations,
+        ExecutionProof memory _invalidExecutionProof
+    ) external controllerOnly {
         _token.approve(address(_layercake), _operations.amount);
-        _layercake.storeNegationOperations(_operations);
+        _layercake.storeNegationOperations(_operations, _invalidExecutionProof);
     }
 
     function executeNegationOperations(

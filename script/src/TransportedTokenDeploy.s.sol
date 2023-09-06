@@ -23,11 +23,13 @@ contract TransportedTokenDeploy is Test, Script {
     // Token name
     string public originTokenName;
     string public originTokenSymbol;
+    uint256 public originTokenDecimals;
 
     function run() external {
         deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         originTokenName = vm.envString("ORIGIN_TOKEN_NAME");
         originTokenSymbol = vm.envString("ORIGIN_TOKEN_SYMBOL");
+        originTokenDecimals = vm.envUint("ORIGIN_TOKEN_DECIMALS");
         depositCap = vm.envUint("DEPOSIT_CAP") * 1 ether;
 
         address deployerAddress = vm.addr(deployerPrivateKey);
@@ -38,7 +40,8 @@ contract TransportedTokenDeploy is Test, Script {
         destinationToken = new LayerCakeTransportedToken(
                                     depositCap, 
                                     originTokenName, 
-                                    originTokenSymbol);
+                                    originTokenSymbol,
+                                    uint8(originTokenDecimals));
 
         string memory path = ".env";
         vm.writeLine(
